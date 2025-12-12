@@ -4,7 +4,7 @@ import { importStudentsFromExcel } from '../lib/excel-utils';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, horizontalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Upload, X, Plus, Users, School, FileText, PenTool, LayoutTemplate, Palette, Grid, Sliders, Pencil, RotateCcw, Image as ImageIcon, Trash2 } from 'lucide-react';
+import { Upload, X, Plus, Users, School, FileText, PenTool, LayoutTemplate, Palette, Grid, Sliders, Pencil, RotateCcw, Image as ImageIcon, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { StudentVerificationModal } from './StudentVerificationModal';
 import { TemplateEditor } from './TemplateEditor';
 import { useNotification } from './NotificationProvider';
@@ -134,6 +134,14 @@ export const ConfigPanel: React.FC = () => {
             previewColor: 'bg-slate-100',
             available: true,
             defaultPalette: { primary: '#0F172A', secondary: '#D97706', background: '#FAFAF9', text: '#1e293b' }
+        },
+        {
+            id: 'secundaria-02',
+            name: 'Horizonte Académico',
+            category: 'Secundaria',
+            previewColor: 'bg-indigo-50',
+            available: true,
+            defaultPalette: { primary: '#1E3A5F', secondary: '#C9A227', background: '#FEFEFE', text: '#1E293B' }
         },
         // Placeholders para demostración de arquitectura escalable (30+ diseños)
         ...Array.from({ length: 10 }).map((_, i) => ({
@@ -395,20 +403,54 @@ export const ConfigPanel: React.FC = () => {
 
                     {activeTab === 'disenos' && (
                         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                            {/* Category Filter */}
-                            <div className="flex gap-2 overflow-x-auto pb-2 -mx-2 px-2 no-scrollbar">
-                                {categories.map(cat => (
+                            {/* Category Filter - Carrusel elegante */}
+                            <div className="relative group">
+                                {/* Fade izquierdo con flecha */}
+                                <div className="hidden md:flex absolute left-0 top-0 bottom-0 z-10 items-center">
+                                    <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-slate-50 to-transparent pointer-events-none" />
                                     <button
-                                        key={cat}
-                                        onClick={() => setActiveCategory(cat)}
-                                        className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ${activeCategory === cat
-                                            ? 'bg-slate-800 text-white shadow-md'
-                                            : 'bg-white text-slate-500 border border-slate-200 hover:bg-slate-50'
-                                            }`}
+                                        onClick={() => {
+                                            const container = document.getElementById('category-carousel');
+                                            if (container) container.scrollBy({ left: -150, behavior: 'smooth' });
+                                        }}
+                                        className="relative z-20 w-6 h-6 flex items-center justify-center text-slate-400 hover:text-slate-700 transition-colors"
                                     >
-                                        {cat}
+                                        <ChevronLeft size={18} strokeWidth={2.5} />
                                     </button>
-                                ))}
+                                </div>
+
+                                {/* Carrusel */}
+                                <div
+                                    id="category-carousel"
+                                    className="flex gap-2 overflow-x-auto pb-2 px-1 md:px-8 no-scrollbar scroll-smooth"
+                                >
+                                    {categories.map(cat => (
+                                        <button
+                                            key={cat}
+                                            onClick={() => setActiveCategory(cat)}
+                                            className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ${activeCategory === cat
+                                                ? 'bg-slate-800 text-white shadow-md'
+                                                : 'bg-white text-slate-500 border border-slate-200 hover:bg-slate-50'
+                                                }`}
+                                        >
+                                            {cat}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                {/* Fade derecho con flecha */}
+                                <div className="hidden md:flex absolute right-0 top-0 bottom-0 z-10 items-center">
+                                    <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-slate-50 to-transparent pointer-events-none" />
+                                    <button
+                                        onClick={() => {
+                                            const container = document.getElementById('category-carousel');
+                                            if (container) container.scrollBy({ left: 150, behavior: 'smooth' });
+                                        }}
+                                        className="relative z-20 w-6 h-6 flex items-center justify-center text-slate-400 hover:text-slate-700 transition-colors"
+                                    >
+                                        <ChevronRight size={18} strokeWidth={2.5} />
+                                    </button>
+                                </div>
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">

@@ -3,6 +3,7 @@ import type { DiplomaConfig, Student } from '../types';
 import { Inicial01 } from './templates/inicial/Inicial01';
 import { Primaria01 } from './templates/primaria/Primaria01';
 import { Secundaria01 } from './templates/secundaria/Secundaria01';
+import { Secundaria02 } from './templates/secundaria/Secundaria02';
 
 interface DiplomaPreviewProps {
     config: DiplomaConfig;
@@ -19,6 +20,7 @@ export const DIPLOMA_DESIGNS: Record<string, React.FC<any>> = {
     'inicial-01': Inicial01,
     'primaria-01': Primaria01,
     'secundaria-01': Secundaria01,
+    'secundaria-02': Secundaria02,
 };
 
 export const DiplomaPreview = forwardRef<DiplomaPreviewHandle, DiplomaPreviewProps>(({ config, student }, ref) => {
