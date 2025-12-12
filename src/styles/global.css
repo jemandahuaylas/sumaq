@@ -1,1 +1,16 @@
 @import "tailwindcss";
+
+/* Ocultar scrollbar pero mantener funcionalidad */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* Safe area para notch de móviles */
+.safe-area-inset-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+}

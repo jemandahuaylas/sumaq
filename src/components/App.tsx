@@ -281,9 +281,65 @@ const AppContent = () => {
     };
 
     return (
-        <div className="flex h-screen bg-slate-100 overflow-hidden font-sans">
+        <div className="flex flex-col md:flex-row h-screen bg-slate-100 overflow-hidden font-sans">
 
-            {/* Sidebar de Configuración - Pantalla completa en móvil */}
+            {/* Sección de Preview - Móvil (arriba) */}
+            <div className="md:hidden flex flex-col bg-slate-200">
+                {/* Mini Header móvil con controles */}
+                <div className="flex items-center justify-between px-3 py-2 bg-white border-b border-slate-200">
+                    <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 bg-gradient-to-br from-amber-500 to-amber-700 rounded-lg flex items-center justify-center">
+                            <span className="text-white font-bold text-sm font-serif">S</span>
+                        </div>
+                        <span className="text-sm font-bold text-slate-700">Sumaq</span>
+                    </div>
+
+                    {/* Botón descargar móvil */}
+                    <button
+                        onClick={handleDownloadSingle}
+                        disabled={isGenerating}
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 text-white rounded-lg text-xs font-bold disabled:opacity-50"
+                    >
+                        {isGenerating ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
+                        {isGenerating ? 'Generando...' : 'Descargar'}
+                    </button>
+                </div>
+
+                {/* Preview del diploma compacto */}
+                <div className="h-48 overflow-hidden flex items-center justify-center p-2 bg-slate-100">
+                    <div className="transform scale-[0.25] origin-center">
+                        <DiplomaPreview
+                            config={config}
+                            student={students.length > 0 ? students[currentStudentIndex] : undefined}
+                        />
+                    </div>
+                </div>
+
+                {/* Carrusel de miniaturas */}
+                {students.length > 0 && (
+                    <div className="bg-white border-t border-slate-200 px-2 py-2">
+                        <div className="flex gap-2 overflow-x-auto pb-1 snap-x snap-mandatory">
+                            {students.map((student, index) => (
+                                <button
+                                    key={student.id}
+                                    onClick={() => setCurrentStudentIndex(index)}
+                                    className={`flex-shrink-0 snap-center px-3 py-2 rounded-lg text-xs font-medium transition-all ${index === currentStudentIndex
+                                            ? 'bg-amber-500 text-white shadow-md'
+                                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                        }`}
+                                >
+                                    <span className="block truncate max-w-[80px]">
+                                        {student.nombres.split(' ')[0]}
+                                    </span>
+                                    <span className="text-[9px] opacity-70">{index + 1}/{students.length}</span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {/* Panel de Configuración */}
             <ConfigPanel />
 
             {/* Área Principal - Solo visible en desktop */}
@@ -390,3 +446,4 @@ export const App = () => (
         <AppContent />
     </NotificationProvider>
 );
+
