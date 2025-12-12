@@ -255,8 +255,9 @@ export const ConfigPanel: React.FC = () => {
                                                 e.preventDefault();
                                                 import('../lib/excel-utils').then(mod => mod.downloadTemplate());
                                             }}
-                                            className="text-xs font-medium text-slate-400 hover:text-blue-600 underline decoration-dashed"
+                                            className="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-white border-2 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-400 rounded-xl text-sm font-semibold transition-all"
                                         >
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
                                             Descargar plantilla de ejemplo
                                         </button>
                                     </div>
@@ -646,8 +647,8 @@ export const ConfigPanel: React.FC = () => {
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id as TabId)}
                                 className={`flex flex-col items-center gap-0.5 px-2 py-2 rounded-xl transition-all ${isActive
-                                        ? 'bg-white shadow-lg scale-105'
-                                        : 'hover:bg-white/10'
+                                    ? 'bg-white shadow-lg scale-105'
+                                    : 'hover:bg-white/10'
                                     }`}
                             >
                                 <Icon size={20} className={`transition-colors ${isActive ? tab.text : 'text-slate-400'}`} />
