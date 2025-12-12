@@ -41,15 +41,55 @@ export const Primaria01: React.FC<TemplateProps> = ({ config, student }) => {
 
             <div className="relative z-10 flex flex-col justify-between h-full py-6 px-20">
                 {/* Cabecera Moderna */}
-                <div className="flex items-center justify-between border-b-2 border-slate-100 pb-4">
-                    <div className="flex gap-4">
-                        {config.logoColegio && <img src={config.logoColegio} className="h-16" />}
-                        {config.logoUgel && <img src={config.logoUgel} className="h-12 opacity-70 grayscale hover:grayscale-0 transition-all" />}
-                    </div>
-                    <div className="text-right">
-                        <h2 className="text-xl font-bold text-slate-900 uppercase tracking-tight">{config.institucionNombre}</h2>
-                        <span className="text-xs font-bold px-3 py-1 rounded uppercase tracking-widest" style={{ backgroundColor: `${primary}20`, color: primary }}>Excelencia Educativa</span>
-                    </div>
+                {/* Cabecera Moderna Dinámica */}
+                <div className="w-full mb-6 border-b-2 border-slate-100 pb-4">
+                    {(() => {
+                        let logos = config.logos?.map(l => l.src) || [];
+                        if (logos.length === 0) {
+                            logos = [config.logoColegio, config.logoUgel, config.logoMinedu].filter(Boolean) as string[];
+                        }
+
+                        // Scenario 1: Single Logo -> Center everything
+                        if (logos.length === 1) {
+                            return (
+                                <div className="flex flex-col items-center justify-center text-center">
+                                    <div className="flex gap-4 mb-2">
+                                        <img src={logos[0]} className="h-20 object-contain drop-shadow-sm" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-xl font-bold text-slate-900 uppercase tracking-tight">{config.institucionNombre}</h2>
+                                        <span className="text-xs font-bold px-3 py-1 rounded uppercase tracking-widest inline-block mt-1" style={{ backgroundColor: `${primary}20`, color: primary }}>Excelencia Educativa</span>
+                                    </div>
+                                </div>
+                            );
+                        }
+
+                        // Scenario 2 & 3: Distributed
+                        const mid = Math.ceil(logos.length / 2);
+                        const leftLogos = logos.slice(0, mid);
+                        const rightLogos = logos.slice(mid);
+
+                        return (
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-4 flex-wrap">
+                                    {leftLogos.map((src, i) => (
+                                        <img key={i} src={src} className="h-16 object-contain drop-shadow-sm" />
+                                    ))}
+                                </div>
+
+                                <div className={`text-center px-4 flex-1 ${logos.length > 0 ? '' : 'text-right'}`}>
+                                    <h2 className="text-xl font-bold text-slate-900 uppercase tracking-tight">{config.institucionNombre}</h2>
+                                    <span className="text-xs font-bold px-3 py-1 rounded uppercase tracking-widest inline-block mt-1" style={{ backgroundColor: `${primary}20`, color: primary }}>Excelencia Educativa</span>
+                                </div>
+
+                                <div className="flex items-center gap-4 justify-end min-w-[60px] flex-wrap">
+                                    {rightLogos.map((src, i) => (
+                                        <img key={i} src={src} className="h-16 object-contain drop-shadow-sm" />
+                                    ))}
+                                </div>
+                            </div>
+                        );
+                    })()}
                 </div>
 
                 {/* Contenido Central */}

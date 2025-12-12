@@ -5,6 +5,7 @@ import type { AppState, DiplomaConfig, Student, Signer } from '../types';
 const INITIAL_CONFIG: DiplomaConfig = {
     institucionNombre: 'INSTITUCIÓN EDUCATIVA',
     tituloDiploma: 'DIPLOMA',
+    subtituloDiploma: 'OTORGADO CON ALEGRÍA A:',
     nivel: 'Primaria',
     plantillaTexto: 'Estudiante del {{Grado}} del nivel {{Nivel}}, por haber ocupado el {{Puesto}} en mérito al logro de los aprendizajes durante el año escolar 2025.',
     fechaLugar: 'Ciudad, 30 de Diciembre de 2025',
@@ -17,6 +18,7 @@ const INITIAL_CONFIG: DiplomaConfig = {
     mostrarMedalla: false,
     orientacion: 'landscape',
     fondoMarcaAgua: true,
+    logos: [],
     firmas: [
         { id: '1', cargo: 'DIRECTOR', nombre: '' },
         { id: '2', cargo: 'SUB DIRECTOR', nombre: '' },

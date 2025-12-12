@@ -1,17 +1,45 @@
 import React, { useState } from 'react';
 import { useDiplomaStore } from '../store/diplomaStore';
 import { importStudentsFromExcel } from '../lib/excel-utils';
-import { Upload, X, Plus, Users, School, FileText, PenTool, LayoutTemplate, Palette, Grid, Sliders, Pencil, RotateCcw } from 'lucide-react';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, horizontalListSortingStrategy } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { Upload, X, Plus, Users, School, FileText, PenTool, LayoutTemplate, Palette, Grid, Sliders, Pencil, RotateCcw, Image as ImageIcon, Trash2 } from 'lucide-react';
 import { StudentVerificationModal } from './StudentVerificationModal';
 import type { Student } from '../types';
 
 type TabId = 'estudiantes' | 'institucion' | 'disenos' | 'estilo' | 'contenido' | 'firmas';
+
+const SortableLogoItem = ({ id, src, onRemove }: { id: string, src: string, onRemove: () => void }) => {
+    const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+    };
+
+    return (
+        <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="relative group w-20 h-20 bg-white border rounded-lg flex items-center justify-center p-2 shadow-sm cursor-grab active:cursor-grabbing hover:border-blue-400">
+            <img src={src} className="max-w-full max-h-full object-contain" />
+            <button onClick={(e) => { e.stopPropagation(); onRemove(); }} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:scale-110" onPointerDown={(e) => e.stopPropagation()}>
+                <X size={12} />
+            </button>
+        </div>
+    );
+};
 
 export const ConfigPanel: React.FC = () => {
     const { config, students, setStudents, updateConfig, updateSigner, removeSigner, addSigner } = useDiplomaStore();
     const [activeTab, setActiveTab] = useState<TabId>('estudiantes');
     const [showVerificationModal, setShowVerificationModal] = useState(false);
     const [pendingStudents, setPendingStudents] = useState<Student[]>([]);
+
+    const sensors = useSensors(
+        useSensor(PointerSensor),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files?.[0]) {
@@ -34,14 +62,29 @@ export const ConfigPanel: React.FC = () => {
         setPendingStudents([]);
     };
 
-    const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>, key: 'logoColegio' | 'logoUgel' | 'logoMinedu') => {
-        const file = e.target.files?.[0];
-        if (file) {
+    const handleLogoAdd = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files?.[0]) {
             const reader = new FileReader();
             reader.onloadend = () => {
-                updateConfig({ [key]: reader.result as string });
+                const newLogo = { id: crypto.randomUUID(), src: reader.result as string };
+                // Ensure array exists
+                const currentLogos = config.logos || [];
+                // If migrating from old single logos, you might want to include them?
+                // For now, assuming clean start or they appear in the new list if I migrate them.
+                // The Store migration is not explicit, but I can check here.
+                updateConfig({ logos: [...currentLogos, newLogo] });
             };
-            reader.readAsDataURL(file);
+            reader.readAsDataURL(e.target.files[0]);
+            e.target.value = '';
+        }
+    };
+
+    const handleLogoDragEnd = (event: DragEndEvent) => {
+        const { active, over } = event;
+        if (active.id !== over?.id) {
+            const oldIndex = (config.logos || []).findIndex((l) => l.id === active.id);
+            const newIndex = (config.logos || []).findIndex((l) => l.id === over?.id);
+            updateConfig({ logos: arrayMove(config.logos || [], oldIndex, newIndex) });
         }
     };
 
@@ -257,23 +300,40 @@ export const ConfigPanel: React.FC = () => {
                                 </div>
 
                                 <div className="pt-4 border-t border-slate-200">
-                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-3">Logotipos</label>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        {[
-                                            { key: 'logoColegio', label: 'Colegio' },
-                                            { key: 'logoUgel', label: 'UGEL' },
-                                            { key: 'logoMinedu', label: 'MINEDU' }
-                                        ].map((logo) => (
-                                            <div key={logo.key} className={`${logo.key === 'logoMinedu' ? 'col-span-2' : ''}`}>
-                                                <label className="block w-full cursor-pointer group">
-                                                    <div className="bg-white border-2 border-dashed border-slate-200 rounded-xl p-4 text-center transition-all group-hover:border-emerald-400 group-hover:bg-emerald-50">
-                                                        <div className="text-xs font-bold text-slate-500 group-hover:text-emerald-600 mb-1">{logo.label}</div>
-                                                        <span className="text-[10px] text-slate-400">Click para subir</span>
+                                    <div className="flex justify-between items-center mb-3">
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Logotipos</label>
+                                        <label className="cursor-pointer text-xs bg-blue-50 text-blue-600 px-3 py-1 rounded-lg font-bold hover:bg-blue-100 flex items-center gap-1 transition-colors">
+                                            <Plus size={14} /> Agregar
+                                            <input type="file" accept="image/*" className="hidden" onChange={handleLogoAdd} />
+                                        </label>
+                                    </div>
+
+                                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleLogoDragEnd}>
+                                        <SortableContext items={config.logos || []} strategy={horizontalListSortingStrategy}>
+                                            <div className="flex flex-wrap gap-4 min-h-[100px] bg-slate-50 p-4 rounded-xl border border-dashed border-slate-300">
+                                                {(config.logos || []).map((logo) => (
+                                                    <SortableLogoItem
+                                                        key={logo.id}
+                                                        id={logo.id}
+                                                        src={logo.src}
+                                                        onRemove={() => updateConfig({ logos: config.logos.filter(l => l.id !== logo.id) })}
+                                                    />
+                                                ))}
+                                                {(config.logos || []).length === 0 && (
+                                                    <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 gap-2 py-4">
+                                                        <ImageIcon size={24} className="opacity-50" />
+                                                        <span className="text-xs text-center">Arrastra aquí tus logos o usa el botón agregar</span>
                                                     </div>
-                                                    <input type="file" className="hidden" onChange={(e) => handleLogoUpload(e, logo.key as any)} />
-                                                </label>
+                                                )}
                                             </div>
-                                        ))}
+                                        </SortableContext>
+                                    </DndContext>
+                                    <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-100">
+                                        <p className="text-[10px] text-blue-800 leading-relaxed text-center font-medium">
+                                            <strong>Orden Automático:</strong>
+                                            <br />
+                                            <span className="opacity-75">1 Logo: Centro • 2 Logos: Extremos • 3+: Izquierda y Derecha</span>
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -436,6 +496,16 @@ export const ConfigPanel: React.FC = () => {
                                     className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-800 focus:ring-2 focus:ring-violet-500 outline-none shadow-sm"
                                     value={config.tituloDiploma}
                                     onChange={(e) => updateConfig({ tituloDiploma: e.target.value })}
+                                />
+                            </div>
+
+                            <div>
+                                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Subtítulo (Opcional)</label>
+                                <input
+                                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-600 focus:ring-2 focus:ring-violet-500 outline-none shadow-sm"
+                                    value={config.subtituloDiploma || ''}
+                                    onChange={(e) => updateConfig({ subtituloDiploma: e.target.value })}
+                                    placeholder="Ej. OTORGADO A:"
                                 />
                             </div>
 

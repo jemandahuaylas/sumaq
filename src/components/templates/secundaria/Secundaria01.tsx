@@ -43,15 +43,55 @@ export const Secundaria01: React.FC<TemplateProps> = ({ config, student }) => {
             <div className="relative z-10 flex flex-col items-center justify-between h-full py-8 px-24">
 
                 {/* Encabezado Clásico */}
-                <div className="text-center mb-6">
-                    <div className="flex justify-center gap-6 mb-4 items-center">
-                        <img src={config.logoMinedu || ''} className="h-10 opacity-80" />
-                        <div className="h-6 w-px bg-slate-400"></div>
-                        <img src={config.logoColegio || ''} className="h-16" />
-                    </div>
-                    <h2 className="text-lg font-medium tracking-[0.2em] uppercase border-b border-slate-300 pb-1 inline-block" style={{ color: primary }}>
-                        {config.institucionNombre}
-                    </h2>
+                {/* Encabezado Clásico Dinámico */}
+                <div className="w-full mb-6">
+                    {(() => {
+                        let logos = config.logos?.map(l => l.src) || [];
+                        if (logos.length === 0) {
+                            logos = [config.logoColegio, config.logoUgel, config.logoMinedu].filter(Boolean) as string[];
+                        }
+
+                        // Scenario 1: Single Logo -> Center Stack (Classic)
+                        if (logos.length <= 1) {
+                            return (
+                                <div className="text-center">
+                                    <div className="flex justify-center gap-6 mb-4 items-center h-20">
+                                        {logos[0] && <img src={logos[0]} className="h-20 object-contain drop-shadow-sm" />}
+                                    </div>
+                                    <h2 className="text-lg font-medium tracking-[0.2em] uppercase border-b border-slate-300 pb-1 inline-block" style={{ color: primary }}>
+                                        {config.institucionNombre}
+                                    </h2>
+                                </div>
+                            );
+                        }
+
+                        // Scenario 2 & 3: Distributed Header Bar
+                        const mid = Math.ceil(logos.length / 2);
+                        const leftLogos = logos.slice(0, mid);
+                        const rightLogos = logos.slice(mid);
+
+                        return (
+                            <div className="w-full flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-4 min-w-[100px] flex-wrap">
+                                    {leftLogos.map((src, i) => (
+                                        <img key={i} src={src} className="h-16 object-contain grayscale hover:grayscale-0 transition-all opacity-90" />
+                                    ))}
+                                </div>
+
+                                <div className="text-center px-4 flex-1">
+                                    <h2 className="text-lg font-medium tracking-[0.2em] uppercase border-b border-slate-300 pb-1 inline-block" style={{ color: primary }}>
+                                        {config.institucionNombre}
+                                    </h2>
+                                </div>
+
+                                <div className="flex items-center gap-4 justify-end min-w-[100px] flex-wrap">
+                                    {rightLogos.map((src, i) => (
+                                        <img key={i} src={src} className="h-16 object-contain grayscale hover:grayscale-0 transition-all opacity-90" />
+                                    ))}
+                                </div>
+                            </div>
+                        );
+                    })()}
                 </div>
 
                 {/* Título en Oro y Negro */}

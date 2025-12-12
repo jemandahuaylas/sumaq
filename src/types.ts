@@ -14,18 +14,26 @@ export interface Signer {
     firmaImage?: string; // Base64 o URL
 }
 
+export interface DiplomaLogo {
+    id: string;
+    src: string;
+}
+
 export type DesignTheme = 'modern-slate' | 'classic-blue' | 'elegant-gold' | 'minimal-black' | string;
 
 export interface DiplomaConfig {
     // Identidad
     institucionNombre: string;
     tituloDiploma: string; // "DIPLOMA", "RECONOCIMIENTO"
+    subtituloDiploma?: string; // "OTORGADO CON ALEGRÍA A:"
     nivel: string; // "Inicial", "Primaria", "Secundaria"
 
     // Logos
-    logoColegio?: string; // Base64
-    logoUgel?: string;   // Base64
-    logoMinedu?: string; // Base64
+    logos: DiplomaLogo[]; // New flexible system
+    // Legacy support (deprecated)
+    logoColegio?: string;
+    logoUgel?: string;
+    logoMinedu?: string;
     fondoMarcaAgua?: boolean;
 
     // Contenido
