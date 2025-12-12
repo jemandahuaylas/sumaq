@@ -294,21 +294,8 @@ export const Secundaria02: React.FC<TemplateProps> = ({ config, student }) => {
                                     )}
                                 </div>
 
-                                {/* Línea con forma */}
-                                <div className="relative h-4 flex items-center justify-center">
-                                    <div className="w-full h-[2px]" style={{ backgroundColor: primary }} />
-                                    <svg
-                                        className="absolute"
-                                        width="24" height="16" viewBox="0 0 24 16"
-                                    >
-                                        <polygon
-                                            points="12,0 24,8 12,16 0,8"
-                                            fill={bgColor}
-                                            stroke={secondary}
-                                            strokeWidth="2"
-                                        />
-                                    </svg>
-                                </div>
+                                {/* Línea de firma simple */}
+                                <div className="w-full h-[2px]" style={{ backgroundColor: primary }} />
 
                                 <p
                                     className="font-bold text-sm tracking-wider uppercase mt-2"

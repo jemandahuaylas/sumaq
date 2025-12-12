@@ -129,11 +129,11 @@ export const ConfigPanel: React.FC = () => {
         },
         {
             id: 'secundaria-01',
-            name: 'Solemne Clásico',
+            name: 'Onda Esmeralda',
             category: 'Secundaria',
-            previewColor: 'bg-slate-100',
+            previewColor: 'bg-emerald-50',
             available: true,
-            defaultPalette: { primary: '#0F172A', secondary: '#D97706', background: '#FAFAF9', text: '#1e293b' }
+            defaultPalette: { primary: '#047857', secondary: '#0D9488', background: '#F0FDF4', text: '#065F46' }
         },
         {
             id: 'secundaria-02',

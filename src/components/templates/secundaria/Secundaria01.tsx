@@ -7,164 +7,317 @@ interface TemplateProps {
     student: Student;
 }
 
+/**
+ * Secundaria01 - "Onda Esmeralda"
+ * Diseño fluido con ondas orgánicas, gradientes suaves y estética moderna.
+ * Completamente diferente al estilo geométrico de Secundaria02.
+ */
 export const Secundaria01: React.FC<TemplateProps> = ({ config, student }) => {
-    const primary = config.primaryColor || '#0F172A'; // Default slate-900
-    const secondary = config.secondaryColor || '#CA8A04'; // Default yellow-600
+    const primary = config.primaryColor || '#047857'; // Verde esmeralda
+    const secondary = config.secondaryColor || '#0D9488'; // Teal
+    const bgColor = config.backgroundColor || '#F0FDF4';
+    const textColor = config.textColor || '#065F46'; // Verde oscuro en lugar de gris
 
     return (
-        <div className="w-full h-full relative overflow-hidden font-serif bg-white" style={{ backgroundColor: config.backgroundColor || '#FAFAF9', color: config.textColor || '#0F172A' }}>
-            {/* --- FONDO & MARCOS --- */}
+        <div
+            className="w-full h-full relative overflow-hidden"
+            style={{ backgroundColor: bgColor, color: textColor }}
+        >
+            {/* === FONDO CON ONDAS ORGÁNICAS === */}
 
-            {/* Marca de Agua Gigante */}
-            {/* Marca de Agua Gigante */}
-            <div className="absolute inset-0 flex items-center justify-center opacity-[0.08] pointer-events-none z-0">
+            {/* Onda superior grande */}
+            <svg
+                className="absolute top-0 left-0 w-full h-[200px]"
+                viewBox="0 0 1200 200"
+                preserveAspectRatio="none"
+            >
+                <defs>
+                    <linearGradient id="waveGrad1" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor={primary} stopOpacity="0.15" />
+                        <stop offset="50%" stopColor={secondary} stopOpacity="0.1" />
+                        <stop offset="100%" stopColor={primary} stopOpacity="0.15" />
+                    </linearGradient>
+                </defs>
+                <path
+                    d="M0,0 L1200,0 L1200,120 Q1000,180 800,140 Q600,100 400,140 Q200,180 0,120 Z"
+                    fill="url(#waveGrad1)"
+                />
+                <path
+                    d="M0,0 L1200,0 L1200,80 Q1050,140 850,100 Q650,60 450,100 Q250,140 0,80 Z"
+                    fill={primary}
+                    opacity="0.08"
+                />
+            </svg>
+
+            {/* Onda inferior */}
+            <svg
+                className="absolute bottom-0 left-0 w-full h-[180px]"
+                viewBox="0 0 1200 180"
+                preserveAspectRatio="none"
+            >
+                <defs>
+                    <linearGradient id="waveGrad2" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor={secondary} stopOpacity="0.12" />
+                        <stop offset="50%" stopColor={primary} stopOpacity="0.08" />
+                        <stop offset="100%" stopColor={secondary} stopOpacity="0.12" />
+                    </linearGradient>
+                </defs>
+                <path
+                    d="M0,180 L1200,180 L1200,60 Q1000,0 800,40 Q600,80 400,40 Q200,0 0,60 Z"
+                    fill="url(#waveGrad2)"
+                />
+            </svg>
+
+            {/* Círculos decorativos flotantes */}
+            <div
+                className="absolute top-16 right-16 w-32 h-32 rounded-full opacity-10"
+                style={{
+                    background: `radial-gradient(circle, ${primary} 0%, transparent 70%)`
+                }}
+            />
+            <div
+                className="absolute bottom-32 left-12 w-24 h-24 rounded-full opacity-10"
+                style={{
+                    background: `radial-gradient(circle, ${secondary} 0%, transparent 70%)`
+                }}
+            />
+            <div
+                className="absolute top-1/3 right-8 w-16 h-16 rounded-full opacity-15"
+                style={{
+                    border: `2px solid ${primary}`
+                }}
+            />
+
+            {/* Patrón de puntos sutiles */}
+            <div
+                className="absolute inset-0 pointer-events-none opacity-[0.04]"
+                style={{
+                    backgroundImage: `radial-gradient(${primary} 1.5px, transparent 1.5px)`,
+                    backgroundSize: '30px 30px'
+                }}
+            />
+
+            {/* Línea curva decorativa lateral */}
+            <svg
+                className="absolute left-0 top-1/4 h-1/2 w-12"
+                viewBox="0 0 50 200"
+                preserveAspectRatio="none"
+            >
+                <path
+                    d="M0,0 Q50,50 25,100 Q0,150 50,200"
+                    fill="none"
+                    stroke={primary}
+                    strokeWidth="3"
+                    opacity="0.3"
+                />
+            </svg>
+
+            {/* Marca de agua del logo */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
                 {(() => {
                     const firstLogo = (config.logos && config.logos.length > 0) ? config.logos[0].src : config.logoColegio;
                     return firstLogo ? (
-                        <img src={firstLogo} className="w-[600px] h-[600px] object-contain grayscale" />
-                    ) : (
-                        <div className="w-[500px] h-[600px] border-[20px] border-black rounded-[50%]"></div>
-                    );
+                        <img src={firstLogo} className="w-[280px] h-[280px] object-contain opacity-[0.05] grayscale" alt="" />
+                    ) : null;
                 })()}
             </div>
 
-            {/* Marco Exterior */}
-            <div className="absolute inset-3 border-2 z-20" style={{ borderColor: primary }}></div>
-            {/* Marco Interior */}
-            <div className="absolute inset-5 border z-20" style={{ borderColor: secondary }}></div>
+            {/* === CONTENIDO PRINCIPAL === */}
+            <div className="relative z-10 w-full h-full flex flex-col px-16 py-10 justify-between">
 
-            {/* Esquinas Ornamentales */}
-            {[
-                'top-3 left-3 border-t-4 border-l-4',
-                'top-3 right-3 border-t-4 border-r-4',
-                'bottom-3 left-3 border-b-4 border-l-4',
-                'bottom-3 right-3 border-b-4 border-r-4'
-            ].map((cls, i) => (
-                <div key={i} className={`absolute w-16 h-16 z-30 ${cls}`} style={{ borderColor: primary }}></div>
-            ))}
-
-
-            {/* --- ZONA 1: HEADER (Rígida - Top 25%) --- */}
-            <div className="absolute top-0 left-0 w-full h-[25%] px-20 pt-12 z-30 flex items-start justify-center">
-                {(() => {
-                    let logos = config.logos?.map(l => l.src) || [];
-                    if (logos.length === 0) {
-                        logos = [config.logoColegio, config.logoUgel, config.logoMinedu].filter(Boolean) as string[];
-                    }
-
-                    const InstitutionTitle = () => (
-                        <div className="text-center mt-2 border-b border-slate-300 pb-2 mx-auto max-w-3xl">
-                            <h2
-                                className="font-semibold tracking-[0.15em] uppercase leading-tight"
-                                style={{
-                                    color: primary,
-                                    fontSize: `${config.institucionFontSize || 22}px` // Default smaller for classic look
-                                }}
-                            >
-                                {config.institucionNombre}
-                            </h2>
-                            {config.lemaInstitucion && (
-                                <p className="text-[10px] italic mt-1 font-medium tracking-widest uppercase" style={{ color: secondary }}>
-                                    &ldquo;{config.lemaInstitucion}&rdquo;
-                                </p>
-                            )}
+                {/* HEADER */}
+                <div>
+                    {/* Logos */}
+                    <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-4">
+                            {(() => {
+                                const logos = config.logos?.map(l => l.src) || [];
+                                if (logos.length === 0 && config.logoColegio) {
+                                    return <img src={config.logoColegio} className="h-14 object-contain" alt="Logo" />;
+                                }
+                                return logos.slice(0, 2).map((src, i) => (
+                                    <img key={i} src={src} className="h-12 object-contain" alt={`Logo ${i + 1}`} />
+                                ));
+                            })()}
                         </div>
-                    );
-
-                    // Single Logo
-                    if (logos.length <= 1) {
-                        return (
-                            <div className="flex flex-col items-center justify-center h-full -mt-2">
-                                {logos[0] && <img src={logos[0]} className="h-20 object-contain drop-shadow-sm mb-2 opacity-90 hover:opacity-100 transition-opacity" alt="Logo" />}
-                                <InstitutionTitle />
-                            </div>
-                        );
-                    }
-
-                    // Multiple Logos
-                    const mid = Math.ceil(logos.length / 2);
-                    const leftLogos = logos.slice(0, mid);
-                    const rightLogos = logos.slice(mid);
-
-                    return (
-                        <div className="w-full text-center relative h-full">
-                            <div className="absolute top-0 left-0 flex items-start gap-6 max-w-[25%]">
-                                {leftLogos.map((src, i) => (
-                                    <img key={i} src={src} className="h-16 object-contain grayscale hover:grayscale-0 transition-all opacity-80 hover:opacity-100" />
-                                ))}
-                            </div>
-                            <div className="absolute top-0 right-0 flex items-start gap-6 justify-end max-w-[25%]">
-                                {rightLogos.map((src, i) => (
-                                    <img key={i} src={src} className="h-16 object-contain grayscale hover:grayscale-0 transition-all opacity-80 hover:opacity-100" />
-                                ))}
-                            </div>
-
-                            <div className="flex items-end justify-center h-full pb-2">
-                                <InstitutionTitle />
-                            </div>
+                        <div className="flex items-center gap-4">
+                            {(() => {
+                                const logos = config.logos?.map(l => l.src) || [];
+                                return logos.slice(2, 4).map((src, i) => (
+                                    <img key={i} src={src} className="h-12 object-contain" alt={`Logo ${i + 3}`} />
+                                ));
+                            })()}
                         </div>
-                    );
-                })()}
-            </div>
+                    </div>
 
-            {/* --- ZONA 2: CUERPO (Rígida - Middle 53%) --- */}
-            <div className="absolute top-[25%] left-0 w-full bottom-[22%] px-24 z-20 flex flex-col items-center justify-center">
-
-                {/* Título Diploma */}
-                <div className="text-center mb-6 relative">
-                    <h1 className="text-6xl tracking-[0.2em] font-medium text-slate-900 uppercase transform scale-y-90"
-                        style={{ fontFamily: '"Cinzel", serif', color: primary }}>
-                        {config.tituloDiploma}
-                    </h1>
-                    <div className="h-px w-32 mx-auto mt-3 bg-slate-300 relative overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-slate-400 to-transparent animate-shimmer"></div>
+                    {/* Institución con línea ondulada */}
+                    <div className="text-center mt-2">
+                        <h2
+                            className="font-semibold tracking-[0.12em] uppercase"
+                            style={{
+                                color: primary,
+                                fontSize: `${config.institucionFontSize || 20}px`
+                            }}
+                        >
+                            {config.institucionNombre}
+                        </h2>
+                        {/* Línea ondulada decorativa */}
+                        <svg className="w-40 h-3 mx-auto mt-1" viewBox="0 0 160 12">
+                            <path
+                                d="M0,6 Q20,0 40,6 Q60,12 80,6 Q100,0 120,6 Q140,12 160,6"
+                                fill="none"
+                                stroke={secondary}
+                                strokeWidth="2"
+                            />
+                        </svg>
+                        {config.lemaInstitucion && (
+                            <p className="text-xs mt-2 tracking-[0.2em] italic" style={{ color: secondary }}>
+                                "{config.lemaInstitucion}"
+                            </p>
+                        )}
                     </div>
                 </div>
 
-                <p className="text-xs italic text-slate-500 font-serif mb-4 tracking-widest">
-                    {config.subtituloDiploma || 'OTORGADO A:'}
-                </p>
+                {/* CUERPO PRINCIPAL */}
+                <div className="flex flex-col items-center text-center">
 
-                {/* Nombre Estudiante */}
-                <div className="w-full text-center relative mb-8">
-                    {/* Decorative side lines */}
-                    <div className="absolute top-1/2 left-0 w-[10%] h-px bg-gradient-to-r from-transparent to-slate-200"></div>
-                    <div className="absolute top-1/2 right-0 w-[10%] h-px bg-gradient-to-l from-transparent to-slate-200"></div>
+                    {/* Título del Diploma con fondo curvo */}
+                    <div className="relative mb-4">
+                        {/* Fondo con bordes redondeados */}
+                        <div
+                            className="absolute inset-0 -inset-x-12 -inset-y-2 rounded-full opacity-10"
+                            style={{ backgroundColor: primary }}
+                        />
 
-                    <h2 className="text-5xl font-serif italic text-slate-800 px-8 py-2 capitalize truncate leading-tight"
-                        style={{ color: primary, textShadow: '0px 1px 1px rgba(0,0,0,0.05)' }}>
-                        {student.nombres}
-                    </h2>
+                        <h1
+                            className="text-5xl font-bold tracking-[0.15em] uppercase relative z-10 px-8"
+                            style={{
+                                color: primary,
+                                fontFamily: '"Poppins", "Montserrat", sans-serif'
+                            }}
+                        >
+                            {config.tituloDiploma}
+                        </h1>
+                    </div>
+
+                    {/* Separador con hojas/curvas */}
+                    <div className="flex items-center gap-4 mb-3">
+                        <svg width="40" height="20" viewBox="0 0 40 20">
+                            <path d="M40,10 Q30,0 20,10 Q10,20 0,10" fill="none" stroke={secondary} strokeWidth="2" />
+                        </svg>
+                        <div
+                            className="w-3 h-3 rounded-full"
+                            style={{ backgroundColor: primary }}
+                        />
+                        <svg width="40" height="20" viewBox="0 0 40 20">
+                            <path d="M0,10 Q10,0 20,10 Q30,20 40,10" fill="none" stroke={secondary} strokeWidth="2" />
+                        </svg>
+                    </div>
+
+                    {/* Subtítulo */}
+                    <p
+                        className="text-xs tracking-[0.3em] uppercase mb-3 font-medium"
+                        style={{ color: secondary }}
+                    >
+                        {config.subtituloDiploma || 'OTORGADO A'}
+                    </p>
+
+                    {/* Nombre del Estudiante */}
+                    <div className="relative w-full max-w-3xl mb-4">
+                        <h2
+                            className="text-5xl font-bold italic py-2"
+                            style={{
+                                color: primary,
+                                fontFamily: '"Playfair Display", "Georgia", serif'
+                            }}
+                        >
+                            {student.nombres}
+                        </h2>
+
+                        {/* Línea con círculos */}
+                        <div className="flex items-center justify-center gap-2 mt-2">
+                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: secondary, opacity: 0.5 }} />
+                            <div className="w-24 h-[2px] rounded-full" style={{ backgroundColor: primary }} />
+                            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: secondary }} />
+                            <div className="w-24 h-[2px] rounded-full" style={{ backgroundColor: primary }} />
+                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: secondary, opacity: 0.5 }} />
+                        </div>
+                    </div>
+
+                    {/* Texto del diploma */}
+                    <div className="max-w-3xl mx-auto">
+                        <p
+                            className="text-base leading-relaxed"
+                            style={{ color: textColor, opacity: 0.85 }}
+                            dangerouslySetInnerHTML={{ __html: processDiplomaText(config.plantillaTexto, config, student) }}
+                        />
+                    </div>
+
+                    {/* Fecha integrada */}
+                    <div className="text-right w-full max-w-3xl mt-4">
+                        <span
+                            className="text-sm tracking-wider italic"
+                            style={{ color: textColor, opacity: 0.6 }}
+                        >
+                            {config.fechaLugar}
+                        </span>
+                    </div>
                 </div>
 
-                {/* Texto */}
-                <div className="max-w-4xl mx-auto text-center">
-                    <p className="text-lg text-slate-600 font-serif leading-loose text-justify-center"
-                        dangerouslySetInnerHTML={{ __html: processDiplomaText(config.plantillaTexto, config, student) }} />
-                </div>
-            </div>
-
-            {/* --- ZONA 3: FOOTER (Rígida - Bottom 22%) --- */}
-            <div className="absolute bottom-0 left-0 w-full h-[22%] px-16 pb-12 z-30 flex flex-col justify-end">
-                {/* Fecha */}
-                <div className="text-right text-xs italic text-slate-500 font-serif mb-6 pr-6">
-                    {config.fechaLugar}
-                </div>
-
-                {/* Firmas */}
-                <div className="flex justify-center gap-x-8 items-end w-full px-8">
+                {/* FOOTER - Firmas */}
+                <div className="flex justify-center gap-16 items-end">
                     {config.firmas.map((signer) => (
-                        <div key={signer.id} className="text-center min-w-[160px] relative">
-                            <div className="h-16 flex items-end justify-center mb-2">
-                                {signer.firmaImage && <img src={signer.firmaImage} className="max-h-full max-w-[180px] object-contain mix-blend-multiply" />}
+                        <div key={signer.id} className="text-center min-w-[160px]">
+                            <div className="h-12 flex items-end justify-center mb-1">
+                                {signer.firmaImage && (
+                                    <img
+                                        src={signer.firmaImage}
+                                        className="max-h-full max-w-[150px] object-contain mix-blend-multiply"
+                                        alt="Firma"
+                                    />
+                                )}
                             </div>
-                            <div className="h-px w-full bg-slate-800 mb-2"></div>
-                            <p className="font-bold text-xs tracking-wider uppercase text-slate-900">{signer.nombre}</p>
-                            <p className="text-[10px] italic text-slate-500 mt-0.5" style={{ color: secondary }}>{signer.cargo}</p>
+
+                            {/* Línea de firma simple */}
+                            <div
+                                className="h-[2px] w-full rounded-full"
+                                style={{ backgroundColor: primary }}
+                            />
+
+                            <p
+                                className="font-bold text-xs tracking-wider uppercase mt-2"
+                                style={{ color: primary }}
+                            >
+                                {signer.nombre}
+                            </p>
+                            <p
+                                className="text-[10px] tracking-wider mt-0.5"
+                                style={{ color: secondary }}
+                            >
+                                {signer.cargo}
+                            </p>
                         </div>
                     ))}
                 </div>
             </div>
+
+            {/* Medalla con diseño circular */}
+            {config.mostrarMedalla && (
+                <div className="absolute bottom-28 right-12 z-20">
+                    <svg width="60" height="60" viewBox="0 0 60 60">
+                        <defs>
+                            <linearGradient id="circleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stopColor={primary} />
+                                <stop offset="100%" stopColor={secondary} />
+                            </linearGradient>
+                        </defs>
+                        <circle cx="30" cy="30" r="28" fill="url(#circleGrad)" />
+                        <circle cx="30" cy="30" r="22" fill="none" stroke="white" strokeWidth="1" opacity="0.5" />
+                        <circle cx="30" cy="30" r="16" fill="none" stroke="white" strokeWidth="1" opacity="0.3" />
+                        <text x="30" y="36" textAnchor="middle" fontSize="18" fill="white">★</text>
+                    </svg>
+                </div>
+            )}
         </div>
     );
 };
