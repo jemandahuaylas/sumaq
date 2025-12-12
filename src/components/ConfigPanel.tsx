@@ -270,27 +270,55 @@ export const ConfigPanel: React.FC = () => {
 
                     {activeTab === 'institucion' && (
                         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Nombre Institución</label>
-                                    <input
-                                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all shadow-sm"
-                                        value={config.institucionNombre}
-                                        onChange={(e) => updateConfig({ institucionNombre: e.target.value })}
-                                        placeholder="Ej. IE 30059..."
-                                    />
+                            <div className="space-y-8">
+                                <div className="space-y-5">
+                                    <div>
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Nombre Institución</label>
+                                        <textarea
+                                            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all shadow-sm resize-none min-h-[80px]"
+                                            value={config.institucionNombre}
+                                            onChange={(e) => updateConfig({ institucionNombre: e.target.value })}
+                                            placeholder="Nombre de la Institución..."
+                                        />
+
+                                        <div className="mt-3 bg-slate-50 px-3 py-2 rounded-lg border border-slate-100 flex items-center justify-between">
+                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tamaño de Fuente</span>
+                                            <div className="flex items-center gap-3">
+                                                <span className="text-xs font-mono text-slate-500 w-8">{config.institucionFontSize || 24}px</span>
+                                                <input
+                                                    type="range"
+                                                    min="16"
+                                                    max="60"
+                                                    step="1"
+                                                    value={config.institucionFontSize || 24}
+                                                    onChange={(e) => updateConfig({ institucionFontSize: parseInt(e.target.value) })}
+                                                    className="w-32 h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Lema / Slogan (Opcional)</label>
+                                        <input
+                                            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-600 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all shadow-sm"
+                                            value={config.lemaInstitucion || ''}
+                                            onChange={(e) => updateConfig({ lemaInstitucion: e.target.value })}
+                                            placeholder="Ej. EXCELENCIA EDUCATIVA"
+                                        />
+                                    </div>
                                 </div>
 
                                 <div>
-                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Nivel Educativo</label>
-                                    <div className="grid grid-cols-2 gap-2">
+                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-3">Nivel Educativo</label>
+                                    <div className="grid grid-cols-2 gap-3">
                                         {['Inicial', 'Primaria', 'Secundaria', 'Superior'].map((level) => (
                                             <button
                                                 key={level}
                                                 onClick={() => updateConfig({ nivel: level })}
-                                                className={`py-3 px-2 rounded-xl text-sm font-bold border-2 transition-all ${config.nivel === level
-                                                    ? 'border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm'
-                                                    : 'border-transparent bg-white text-slate-600 hover:bg-slate-50'
+                                                className={`py-3 px-2 rounded-xl text-sm font-bold border-2 transition-all shadow-sm ${config.nivel === level
+                                                    ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                                                    : 'border-slate-100 bg-white text-slate-500 hover:border-slate-200 hover:bg-slate-50'
                                                     }`}
                                             >
                                                 {level}
@@ -299,7 +327,7 @@ export const ConfigPanel: React.FC = () => {
                                     </div>
                                 </div>
 
-                                <div className="pt-4 border-t border-slate-200">
+                                <div className="pt-6 border-t border-slate-100">
                                     <div className="flex justify-between items-center mb-3">
                                         <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Logotipos</label>
                                         <label className="cursor-pointer text-xs bg-blue-50 text-blue-600 px-3 py-1 rounded-lg font-bold hover:bg-blue-100 flex items-center gap-1 transition-colors">
@@ -328,13 +356,6 @@ export const ConfigPanel: React.FC = () => {
                                             </div>
                                         </SortableContext>
                                     </DndContext>
-                                    <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-100">
-                                        <p className="text-[10px] text-blue-800 leading-relaxed text-center font-medium">
-                                            <strong>Orden Automático:</strong>
-                                            <br />
-                                            <span className="opacity-75">1 Logo: Centro • 2 Logos: Extremos • 3+: Izquierda y Derecha</span>
-                                        </p>
-                                    </div>
                                 </div>
                             </div>
                         </div>

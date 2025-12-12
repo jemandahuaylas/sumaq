@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import type { DiplomaConfig, Student } from '../types';
 import { Inicial01 } from './templates/inicial/Inicial01';
 import { Primaria01 } from './templates/primaria/Primaria01';
@@ -9,7 +9,19 @@ interface DiplomaPreviewProps {
     student?: Student;
 }
 
-export const DiplomaPreview: React.FC<DiplomaPreviewProps> = ({ config, student }) => {
+// Interfaz para el ref expuesto
+export type DiplomaPreviewHandle = {
+    getDiplomaElement: () => HTMLDivElement | null;
+};
+
+// Mapa de Diseños Disponibles (exportado para uso externo)
+export const DIPLOMA_DESIGNS: Record<string, React.FC<any>> = {
+    'inicial-01': Inicial01,
+    'primaria-01': Primaria01,
+    'secundaria-01': Secundaria01,
+};
+
+export const DiplomaPreview = forwardRef<DiplomaPreviewHandle, DiplomaPreviewProps>(({ config, student }, ref) => {
     const data = student || {
         id: 'demo',
         nombres: 'Estudiante Ejemplo',
@@ -19,7 +31,13 @@ export const DiplomaPreview: React.FC<DiplomaPreviewProps> = ({ config, student 
     } as Student;
 
     const containerRef = useRef<HTMLDivElement>(null);
+    const diplomaRef = useRef<HTMLDivElement>(null);
     const [scale, setScale] = useState(0.8);
+
+    // Exponer el ref del diploma al componente padre
+    useImperativeHandle(ref, () => ({
+        getDiplomaElement: () => diplomaRef.current
+    }));
 
     useEffect(() => {
         const updateScale = () => {
@@ -53,16 +71,9 @@ export const DiplomaPreview: React.FC<DiplomaPreviewProps> = ({ config, student 
         return () => observer.disconnect();
     }, []);
 
-    // Mapa de Diseños Disponibles
-    const DESIGNS: Record<string, React.FC<any>> = {
-        'inicial-01': Inicial01,
-        'primaria-01': Primaria01,
-        'secundaria-01': Secundaria01,
-    };
-
     // Selector de Diseño
     const getDesign = () => {
-        const DesignComponent = DESIGNS[config.selectedDesign] || Secundaria01;
+        const DesignComponent = DIPLOMA_DESIGNS[config.selectedDesign] || Secundaria01;
         return <DesignComponent config={config} student={data} />;
     };
 
@@ -70,6 +81,8 @@ export const DiplomaPreview: React.FC<DiplomaPreviewProps> = ({ config, student 
         <div ref={containerRef} className="w-full h-full flex justify-center items-center bg-transparent overflow-hidden">
             {/* Contenedor A4 */}
             <div
+                ref={diplomaRef}
+                id="diploma-container"
                 className="bg-white shadow-xl flex-shrink-0 transition-transform duration-200 ease-out will-change-transform "
                 style={{
                     width: '297mm', // A4 Landscape
@@ -84,4 +97,4 @@ export const DiplomaPreview: React.FC<DiplomaPreviewProps> = ({ config, student 
             </div>
         </div>
     );
-};
+});

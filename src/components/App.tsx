@@ -1,18 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { ConfigPanel } from './ConfigPanel';
-import { DiplomaPreview } from './DiplomaPreview';
-import { DiplomaDocument } from './pdf/DiplomaDocument';
+import { DiplomaPreview, DIPLOMA_DESIGNS } from './DiplomaPreview';
+import type { DiplomaPreviewHandle } from './DiplomaPreview';
 import { useDiplomaStore } from '../store/diplomaStore';
-import { Download, ChevronLeft, ChevronRight, FileDown, Archive, FileText, ChevronDown } from 'lucide-react';
-import { pdf } from '@react-pdf/renderer';
+import { Download, ChevronLeft, ChevronRight, FileDown, Archive, FileText, ChevronDown, Loader2 } from 'lucide-react';
 import { saveAs } from 'file-saver';
 import JSZip from 'jszip';
+import { domToJpeg } from 'modern-screenshot';
+import { jsPDF } from 'jspdf';
+import type { Student } from '../types';
+
+// Configuración de exportación
+const EXPORT_CONFIG = {
+    scale: 2,
+    quality: 0.9,
+    pixelWidth: 1123,
+    pixelHeight: 794,
+    pageWidth: 297,
+    pageHeight: 210,
+};
 
 export const App = () => {
     const { config, students } = useDiplomaStore();
     const [currentStudentIndex, setCurrentStudentIndex] = useState(0);
     const [isGenerating, setIsGenerating] = useState(false);
+    const [generatingProgress, setGeneratingProgress] = useState<string>('');
     const [showDownloadMenu, setShowDownloadMenu] = useState(false);
+    const diplomaPreviewRef = useRef<DiplomaPreviewHandle>(null);
 
     // Navegación en Preview
     const nextStudent = () => {
@@ -22,62 +36,244 @@ export const App = () => {
         if (currentStudentIndex > 0) setCurrentStudentIndex(prev => prev - 1);
     };
 
-    const handleDownloadMultipage = async () => {
-        setIsGenerating(true);
-        setShowDownloadMenu(false);
+    /**
+     * Captura el elemento actual del diploma y lo convierte a JPEG
+     */
+    const captureDiplomaAsJpeg = async (element: HTMLElement): Promise<string> => {
+        // Guardar estilos originales
+        const originalTransform = element.style.transform;
+        const originalTransformOrigin = element.style.transformOrigin;
+
         try {
-            const studentsToPrint = students.length > 0 ? students : [{
-                id: 'demo', nombres: 'NOMBRE ESTUDIANTE', grado: 'GRADO', nivel: 'NIVEL', puesto: 'PUESTO'
-            }];
-            const blob = await pdf(<DiplomaDocument config={config} students={studentsToPrint} />).toBlob();
-            saveAs(blob, `Diplomas-Completo-${config.institucionNombre || 'Institucion'}.pdf`);
-        } catch (error) {
-            console.error("Error generando PDF:", error);
-            alert("Hubo un error generando el PDF.");
+            // Remover transform para captura limpia
+            element.style.transform = 'none';
+            element.style.transformOrigin = 'top left';
+
+            // Esperar a que se apliquen los estilos
+            await new Promise(r => requestAnimationFrame(r));
+            await new Promise(r => setTimeout(r, 50));
+
+            const dataUrl = await domToJpeg(element, {
+                scale: EXPORT_CONFIG.scale,
+                quality: EXPORT_CONFIG.quality,
+                backgroundColor: '#ffffff',
+                width: EXPORT_CONFIG.pixelWidth,
+                height: EXPORT_CONFIG.pixelHeight,
+                style: {
+                    transform: 'none',
+                    transformOrigin: 'top left',
+                },
+            });
+
+            return dataUrl;
         } finally {
-            setIsGenerating(false);
+            // Restaurar estilos originales
+            element.style.transform = originalTransform;
+            element.style.transformOrigin = originalTransformOrigin;
         }
     };
 
-    const handleDownloadZip = async () => {
-        if (students.length === 0) return handleDownloadMultipage();
-        setIsGenerating(true);
-        setShowDownloadMenu(false);
-        try {
-            const zip = new JSZip();
-            const folder = zip.folder(`Diplomas-${config.institucionNombre || 'Export'}`);
+    /**
+     * Renderiza un diploma para un estudiante específico y lo captura
+     * Crea un contenedor temporal fuera de pantalla
+     */
+    const renderAndCaptureDiploma = async (student: Student): Promise<string> => {
+        return new Promise(async (resolve, reject) => {
+            // Crear contenedor fuera de pantalla
+            const container = document.createElement('div');
+            container.style.cssText = `
+                position: fixed;
+                left: -10000px;
+                top: 0;
+                width: ${EXPORT_CONFIG.pixelWidth}px;
+                height: ${EXPORT_CONFIG.pixelHeight}px;
+                overflow: hidden;
+                background: white;
+                z-index: -9999;
+            `;
+            document.body.appendChild(container);
 
-            // Podríamos mostrar progreso aquí, pero por ahora solo el spinner global
-            for (let i = 0; i < students.length; i++) {
-                const s = students[i];
-                const blob = await pdf(<DiplomaDocument config={config} students={[s]} />).toBlob();
-                const cleanName = s.nombres.replace(/[^a-z0-9\s-]/gi, '').trim() || `Estudiante-${i + 1}`;
-                folder?.file(`${cleanName}.pdf`, blob);
+            // Crear elemento con el mismo estilo que el diploma principal
+            const diplomaWrapper = document.createElement('div');
+            diplomaWrapper.style.cssText = `
+                width: ${EXPORT_CONFIG.pixelWidth}px;
+                height: ${EXPORT_CONFIG.pixelHeight}px;
+                background: white;
+                position: relative;
+                overflow: hidden;
+            `;
+            container.appendChild(diplomaWrapper);
+
+            try {
+                // Importar React para renderizar
+                const { createRoot } = await import('react-dom/client');
+                const root = createRoot(diplomaWrapper);
+
+                // Obtener el componente de diseño correspondiente
+                const DesignComponent = DIPLOMA_DESIGNS[config.selectedDesign] || DIPLOMA_DESIGNS['secundaria-01'];
+
+                // Renderizar el diploma
+                root.render(<DesignComponent config={config} student={student} />);
+
+                // Esperar a que se renderice y las imágenes carguen
+                await new Promise(r => setTimeout(r, 300));
+
+                // Capturar
+                const dataUrl = await domToJpeg(diplomaWrapper, {
+                    scale: EXPORT_CONFIG.scale,
+                    quality: EXPORT_CONFIG.quality,
+                    backgroundColor: '#ffffff',
+                    width: EXPORT_CONFIG.pixelWidth,
+                    height: EXPORT_CONFIG.pixelHeight,
+                });
+
+                root.unmount();
+                document.body.removeChild(container);
+                resolve(dataUrl);
+            } catch (error) {
+                document.body.removeChild(container);
+                reject(error);
             }
-
-            const content = await zip.generateAsync({ type: "blob" });
-            saveAs(content, `Diplomas-${config.institucionNombre || 'Export'}.zip`);
-        } catch (error) {
-            console.error("Error generando ZIP:", error);
-            alert("Hubo un error generando el ZIP.");
-        } finally {
-            setIsGenerating(false);
-        }
+        });
     };
 
+    // Descargar el diploma actualmente visible
     const handleDownloadSingle = async () => {
         setIsGenerating(true);
         setShowDownloadMenu(false);
+        setGeneratingProgress('Capturando diploma...');
+
         try {
-            const s = students.length > 0 ? students[currentStudentIndex] : {
-                id: 'demo', nombres: 'NOMBRE ESTUDIANTE', grado: 'GRADO', nivel: 'NIVEL', puesto: 'PUESTO'
-            };
-            const blob = await pdf(<DiplomaDocument config={config} students={[s]} />).toBlob();
-            saveAs(blob, `Diploma-${(s as any).nombres || 'Demo'}.pdf`);
+            // Obtener el elemento del diploma
+            let diplomaElement = diplomaPreviewRef.current?.getDiplomaElement();
+            if (!diplomaElement) {
+                diplomaElement = document.getElementById('diploma-container') as HTMLDivElement;
+            }
+
+            if (!diplomaElement) {
+                throw new Error('No se encontró el elemento del diploma.');
+            }
+
+            // Capturar como JPEG
+            const imgData = await captureDiplomaAsJpeg(diplomaElement);
+
+            // Crear PDF
+            const pdf = new jsPDF({
+                orientation: 'landscape',
+                unit: 'mm',
+                format: 'a4',
+                compress: true,
+            });
+
+            pdf.addImage(imgData, 'JPEG', 0, 0, EXPORT_CONFIG.pageWidth, EXPORT_CONFIG.pageHeight, undefined, 'FAST');
+
+            // Descargar
+            const blob = pdf.output('blob');
+            const studentName = students[currentStudentIndex]?.nombres || 'Demo';
+            const cleanName = studentName.replace(/[^a-z0-9\s-]/gi, '').trim() || 'Diploma';
+            saveAs(blob, `Diploma-${cleanName}.pdf`);
         } catch (error) {
-            console.error("Error generando PDF individual:", error);
+            console.error('Error generando PDF individual:', error);
+            alert(`Error: ${error instanceof Error ? error.message : 'Error desconocido'}`);
         } finally {
             setIsGenerating(false);
+            setGeneratingProgress('');
+        }
+    };
+
+    // Descargar PDF multipágina con todos los estudiantes
+    const handleDownloadMultipage = async () => {
+        setIsGenerating(true);
+        setShowDownloadMenu(false);
+
+        try {
+            const studentsToPrint = students.length > 0 ? students : [{
+                id: 'demo',
+                nombres: 'ESTUDIANTE EJEMPLO',
+                grado: '5°',
+                nivel: config.nivel || 'Secundaria',
+                puesto: '1er Puesto'
+            } as Student];
+
+            const pdf = new jsPDF({
+                orientation: 'landscape',
+                unit: 'mm',
+                format: 'a4',
+                compress: true,
+            });
+
+            for (let i = 0; i < studentsToPrint.length; i++) {
+                setGeneratingProgress(`Procesando ${i + 1} de ${studentsToPrint.length}...`);
+
+                const imgData = await renderAndCaptureDiploma(studentsToPrint[i]);
+
+                if (i > 0) {
+                    pdf.addPage('a4', 'landscape');
+                }
+
+                pdf.addImage(imgData, 'JPEG', 0, 0, EXPORT_CONFIG.pageWidth, EXPORT_CONFIG.pageHeight, undefined, 'FAST');
+            }
+
+            setGeneratingProgress('Guardando archivo...');
+            const blob = pdf.output('blob');
+            const institutionName = config.institucionNombre?.replace(/[^a-z0-9\s-]/gi, '').trim() || 'Institucion';
+            saveAs(blob, `Diplomas-${institutionName}.pdf`);
+        } catch (error) {
+            console.error('Error generando PDF multipágina:', error);
+            alert('Hubo un error generando el PDF multipágina.');
+        } finally {
+            setIsGenerating(false);
+            setGeneratingProgress('');
+        }
+    };
+
+    // Descargar ZIP con PDFs individuales
+    const handleDownloadZip = async () => {
+        if (students.length === 0) {
+            return handleDownloadMultipage();
+        }
+
+        setIsGenerating(true);
+        setShowDownloadMenu(false);
+
+        try {
+            const zip = new JSZip();
+            const institutionName = config.institucionNombre?.replace(/[^a-z0-9\s-]/gi, '').trim() || 'Export';
+            const folder = zip.folder(`Diplomas-${institutionName}`);
+
+            for (let i = 0; i < students.length; i++) {
+                setGeneratingProgress(`Generando ${i + 1} de ${students.length}...`);
+
+                const imgData = await renderAndCaptureDiploma(students[i]);
+
+                const pdf = new jsPDF({
+                    orientation: 'landscape',
+                    unit: 'mm',
+                    format: 'a4',
+                    compress: true,
+                });
+
+                pdf.addImage(imgData, 'JPEG', 0, 0, EXPORT_CONFIG.pageWidth, EXPORT_CONFIG.pageHeight, undefined, 'FAST');
+
+                const blob = pdf.output('blob');
+                const cleanName = students[i].nombres.replace(/[^a-z0-9\s-]/gi, '').trim() || `Estudiante-${i + 1}`;
+                folder?.file(`${cleanName}.pdf`, blob);
+            }
+
+            setGeneratingProgress('Comprimiendo ZIP...');
+            const content = await zip.generateAsync({
+                type: 'blob',
+                compression: 'DEFLATE',
+                compressionOptions: { level: 6 }
+            });
+
+            saveAs(content, `Diplomas-${institutionName}.zip`);
+        } catch (error) {
+            console.error('Error generando ZIP:', error);
+            alert('Hubo un error generando el ZIP.');
+        } finally {
+            setIsGenerating(false);
+            setGeneratingProgress('');
         }
     };
 
@@ -99,7 +295,7 @@ export const App = () => {
 
                     <div className="flex items-center gap-4">
 
-                        {/* Navegación de Estudiantes (Solo visible si hay más de 1) */}
+                        {/* Navegación de Estudiantes */}
                         {students.length > 0 && (
                             <div className="flex items-center bg-slate-50 rounded-lg p-1 border border-slate-200">
                                 <button onClick={prevStudent} disabled={currentStudentIndex === 0} className="p-1.5 hover:bg-white rounded-md disabled:opacity-30 transition-all"><ChevronLeft size={16} /></button>
@@ -116,7 +312,10 @@ export const App = () => {
                                 className={`flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/20 active:scale-95 ${isGenerating ? 'opacity-70 cursor-wait' : ''}`}
                             >
                                 {isGenerating ? (
-                                    <>Generando...</>
+                                    <>
+                                        <Loader2 size={18} className="animate-spin" />
+                                        <span className="text-sm">{generatingProgress || 'Generando...'}</span>
+                                    </>
                                 ) : (
                                     <>
                                         <Download size={18} /> Descargar <ChevronDown size={14} className={`transition-transform ${showDownloadMenu ? 'rotate-180' : ''}`} />
@@ -157,7 +356,7 @@ export const App = () => {
                                                 </div>
                                                 <div>
                                                     <span className="block text-sm font-bold text-slate-700">Diploma Actual</span>
-                                                    <span className="text-[10px] text-slate-400 block leading-tight">Solo el estudiante visible ({students[currentStudentIndex]?.nombres.split(' ')[0] || 'Demo'})</span>
+                                                    <span className="text-[10px] text-slate-400 block leading-tight">Solo el estudiante visible ({students[currentStudentIndex]?.nombres?.split(' ')[0] || 'Demo'})</span>
                                                 </div>
                                             </button>
                                         </div>
@@ -171,6 +370,7 @@ export const App = () => {
                 {/* Área de Visualización */}
                 <main className="flex-1 overflow-auto bg-slate-100/50 p-8 flex items-center justify-center">
                     <DiplomaPreview
+                        ref={diplomaPreviewRef}
                         config={config}
                         student={students.length > 0 ? students[currentStudentIndex] : undefined}
                     />

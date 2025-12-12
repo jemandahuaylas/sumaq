@@ -12,130 +12,146 @@ export const Primaria01: React.FC<TemplateProps> = ({ config, student }) => {
     const secondary = config.secondaryColor || '#14B8A6'; // Default teal
 
     return (
-        <div className="w-full h-full relative overflow-hidden text-slate-800" style={{ backgroundColor: config.backgroundColor || '#ffffff', color: config.textColor || '#1e293b' }}>
-            {/* Medalla Honorífica */}
-            {config.mostrarMedalla && (
-                <div className="absolute top-28 right-8 z-30 drop-shadow-xl animate-in fade-in zoom-in duration-700">
-                    <svg width="80" height="120" viewBox="0 0 80 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M40 0L80 20V50C80 85 40 120 40 120C40 120 0 85 0 50V20L40 0Z" fill="#F59E0B" fillOpacity="0.9" />
-                        <path d="M40 8L72 24V50C72 80 40 108 40 108C40 108 8 80 8 50V24L40 8Z" stroke="#B45309" strokeWidth="2" />
-                        <path d="M40 25V85M15 55H65" stroke="#B45309" strokeWidth="2" strokeOpacity="0.3" />
-                        <circle cx="40" cy="55" r="15" fill="#FEF3C7" stroke="#B45309" strokeWidth="2" />
-                        <path d="M35 55L38 60L45 50" stroke="#B45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                </div>
-            )}
-            {/* Fondo Geométrico */}
-            <svg className="absolute inset-0 w-full h-full opacity-10 z-0" xmlns="http://www.w3.org/2000/svg">
+        <div className="w-full h-full relative overflow-hidden text-slate-800 font-sans" style={{ backgroundColor: config.backgroundColor || '#ffffff', color: config.textColor || '#1e293b' }}>
+            {/* --- FONDO GEOMÉTRICO (Absolute) --- */}
+            {/* Grid Pattern */}
+            <svg className="absolute inset-0 w-full h-full opacity-[0.03] z-0" xmlns="http://www.w3.org/2000/svg">
                 <defs><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke={primary} strokeWidth="1" /></pattern></defs>
                 <rect width="100%" height="100%" fill="url(#grid)" />
             </svg>
 
             {/* Bandas Laterales */}
-            <div className="absolute left-0 top-0 bottom-0 w-4 z-20" style={{ backgroundColor: primary }}></div>
-            <div className="absolute right-0 top-0 bottom-0 w-4 z-20" style={{ backgroundColor: secondary }}></div>
+            <div className="absolute left-0 top-0 bottom-0 w-3 z-20" style={{ backgroundColor: primary }}></div>
+            <div className="absolute right-0 top-0 bottom-0 w-3 z-20" style={{ backgroundColor: secondary }}></div>
 
-            {/* Esquina Decorativa */}
-            <div className="absolute top-0 right-0 w-0 h-0 border-t-[120px] border-l-[120px] border-l-transparent z-10" style={{ borderTopColor: secondary, opacity: 0.2 }}></div>
-            <div className="absolute bottom-0 left-0 w-0 h-0 border-b-[120px] border-r-[120px] border-r-transparent z-10" style={{ borderBottomColor: primary, opacity: 0.2 }}></div>
+            {/* Esquinas Geométricas */}
+            <div className="absolute top-0 right-0 w-0 h-0 border-t-[150px] border-l-[150px] border-l-transparent z-10 opacity-10" style={{ borderTopColor: secondary }}></div>
+            <div className="absolute bottom-0 left-0 w-0 h-0 border-b-[150px] border-r-[150px] border-r-transparent z-10 opacity-10" style={{ borderBottomColor: primary }}></div>
 
-            <div className="relative z-10 flex flex-col justify-between h-full py-6 px-20">
-                {/* Cabecera Moderna */}
-                {/* Cabecera Moderna Dinámica */}
-                <div className="w-full mb-6 border-b-2 border-slate-100 pb-4">
-                    {(() => {
-                        let logos = config.logos?.map(l => l.src) || [];
-                        if (logos.length === 0) {
-                            logos = [config.logoColegio, config.logoUgel, config.logoMinedu].filter(Boolean) as string[];
-                        }
 
-                        // Scenario 1: Single Logo -> Center everything
-                        if (logos.length === 1) {
-                            return (
-                                <div className="flex flex-col items-center justify-center text-center">
-                                    <div className="flex gap-4 mb-2">
-                                        <img src={logos[0]} className="h-20 object-contain drop-shadow-sm" />
-                                    </div>
-                                    <div>
-                                        <h2 className="text-xl font-bold text-slate-900 uppercase tracking-tight">{config.institucionNombre}</h2>
-                                        <span className="text-xs font-bold px-3 py-1 rounded uppercase tracking-widest inline-block mt-1" style={{ backgroundColor: `${primary}20`, color: primary }}>Excelencia Educativa</span>
-                                    </div>
-                                </div>
-                            );
-                        }
+            {/* --- ZONA 1: HEADER (Rígida - Top 25%) --- */}
+            <div className="absolute top-0 left-0 w-full h-[25%] px-16 pt-10 z-30">
+                {(() => {
+                    let logos = config.logos?.map(l => l.src) || [];
+                    if (logos.length === 0) {
+                        logos = [config.logoColegio, config.logoUgel, config.logoMinedu].filter(Boolean) as string[];
+                    }
 
-                        // Scenario 2 & 3: Distributed
-                        const mid = Math.ceil(logos.length / 2);
-                        const leftLogos = logos.slice(0, mid);
-                        const rightLogos = logos.slice(mid);
+                    const InstitutionTitle = () => (
+                        <div className="text-center mt-2 border-b-2 border-slate-100 pb-4 mx-auto max-w-4xl">
+                            <h2
+                                className="font-bold text-slate-900 uppercase tracking-tight leading-none"
+                                style={{ fontSize: `${config.institucionFontSize || 28}px` }} // Default slightly smaller for Primary elegance
+                            >
+                                {config.institucionNombre}
+                            </h2>
+                            {config.lemaInstitucion && (
+                                <span className="text-xs font-bold px-4 py-1 rounded-full uppercase tracking-widest inline-block mt-2"
+                                    style={{ backgroundColor: `${primary}10`, color: primary }}>
+                                    {config.lemaInstitucion}
+                                </span>
+                            )}
+                        </div>
+                    );
 
+                    // Single Logo
+                    if (logos.length <= 1) {
                         return (
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-4 flex-wrap">
-                                    {leftLogos.map((src, i) => (
-                                        <img key={i} src={src} className="h-16 object-contain drop-shadow-sm" />
-                                    ))}
-                                </div>
-
-                                <div className={`text-center px-4 flex-1 ${logos.length > 0 ? '' : 'text-right'}`}>
-                                    <h2 className="text-xl font-bold text-slate-900 uppercase tracking-tight">{config.institucionNombre}</h2>
-                                    <span className="text-xs font-bold px-3 py-1 rounded uppercase tracking-widest inline-block mt-1" style={{ backgroundColor: `${primary}20`, color: primary }}>Excelencia Educativa</span>
-                                </div>
-
-                                <div className="flex items-center gap-4 justify-end min-w-[60px] flex-wrap">
-                                    {rightLogos.map((src, i) => (
-                                        <img key={i} src={src} className="h-16 object-contain drop-shadow-sm" />
-                                    ))}
-                                </div>
+                            <div className="flex flex-col items-center justify-center h-full -mt-4">
+                                {logos[0] && <img src={logos[0]} className="h-24 object-contain drop-shadow-sm mb-1 hover:scale-105 transition-transform" alt="Logo" />}
+                                <InstitutionTitle />
                             </div>
                         );
-                    })()}
-                </div>
+                    }
 
-                {/* Contenido Central */}
-                <div className="text-center py-4 flex-1 flex flex-col justify-center pb-2">
-                    <h1 className="text-6xl font-sans font-black tracking-tighter text-slate-900 mb-2 uppercase" style={{ WebkitTextStroke: '1px black', color: 'transparent' }}>
+                    // Multiple Logos
+                    const mid = Math.ceil(logos.length / 2);
+                    const leftLogos = logos.slice(0, mid);
+                    const rightLogos = logos.slice(mid);
+
+                    return (
+                        <div className="w-full text-center relative h-full">
+                            {/* Logo Row - Absolute Top */}
+                            <div className="absolute top-0 left-0 flex items-start gap-4 flex-wrap max-w-[25%]">
+                                {leftLogos.map((src, i) => (
+                                    <img key={i} src={src} className="h-20 object-contain drop-shadow-sm hover:scale-105 transition-transform" />
+                                ))}
+                            </div>
+                            <div className="absolute top-0 right-0 flex items-start gap-4 justify-end flex-wrap max-w-[25%]">
+                                {rightLogos.map((src, i) => (
+                                    <img key={i} src={src} className="h-20 object-contain drop-shadow-sm hover:scale-105 transition-transform" />
+                                ))}
+                            </div>
+
+                            {/* Title - Centered & Pushed Down */}
+                            <div className="flex items-end justify-center h-full pb-2">
+                                <InstitutionTitle />
+                            </div>
+                        </div>
+                    );
+                })()}
+            </div>
+
+            {/* --- ZONA 2: CUERPO (Rígida - Middle 53%) --- */}
+            <div className="absolute top-[25%] left-0 w-full bottom-[22%] px-20 z-20 flex flex-col items-center justify-center">
+
+                {/* Título Diploma */}
+                <div className="mb-4 text-center">
+                    <h1 className="text-7xl font-sans font-black tracking-tight uppercase"
+                        style={{
+                            WebkitTextStroke: '2px #334155',
+                            color: 'transparent',
+                            letterSpacing: '0.05em'
+                        }}>
                         {config.tituloDiploma}
                     </h1>
-                    <div className="h-1 w-24 mx-auto mb-6" style={{ backgroundImage: `linear-gradient(to right, ${primary}, ${secondary})` }}></div>
-
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-[0.3em] mb-2">Se confiere el presente a:</p>
-
-                    <div className="relative inline-block mb-6">
-                        <div className="absolute inset-0 blur-xl opacity-30 transform -skew-x-12" style={{ backgroundColor: primary }}></div>
-                        <h2 className="relative text-5xl font-black uppercase transform -skew-x-6 z-10" style={{ fontFamily: 'Impact, sans-serif', color: primary }}>
-                            {student.nombres}
-                        </h2>
-                    </div>
-
-                    <div className="max-w-4xl mx-auto mb-3">
-                        <p className="text-xl text-slate-600 font-light leading-relaxed" dangerouslySetInnerHTML={{ __html: processDiplomaText(config.plantillaTexto, config, student) }} />
-                    </div>
+                    <div className="h-1.5 w-32 mx-auto mt-2 rounded-full" style={{ backgroundImage: `linear-gradient(to right, ${primary}, ${secondary})` }}></div>
                 </div>
 
-                {/* Footer Estrucurado */}
-                <div className="w-full mt-2">
-                    {/* Fecha a la derecha */}
-                    <div className="text-right text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider pr-4">
-                        {config.fechaLugar}
-                    </div>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.4em] mb-2 bg-slate-50 px-4 py-1 rounded border border-slate-100">
+                    Se confiere el presente a:
+                </p>
 
-                    <div className="grid grid-cols-2 gap-20 border-t-2 border-slate-100 pt-4">
-                        {config.firmas.slice(0, 2).map((signer) => (
-                            <div key={signer.id} className="text-center">
-                                <div className="h-14 flex items-end justify-center mb-1">{signer.firmaImage && <img src={signer.firmaImage} className="max-h-full" />}</div>
-                                <div className="h-px w-full bg-slate-300 mb-1"></div>
-                                <p className="font-bold text-sm">{signer.nombre}</p>
-                                <p className="text-[10px] font-bold uppercase" style={{ color: secondary }}>{signer.cargo}</p>
+                {/* Nombre Estudiante */}
+                <div className="relative inline-block mb-8 w-full text-center">
+                    <div className="absolute inset-0 blur-2xl opacity-20 transform scale-x-110" style={{ backgroundColor: primary }}></div>
+                    <h2 className="relative text-6xl font-black uppercase italic transform -skew-x-6 z-10 truncate px-4 leading-tight mb-2"
+                        style={{ fontFamily: 'Impact, sans-serif', color: primary, textShadow: '2px 2px 0px rgba(0,0,0,0.1)' }}>
+                        {student.nombres}
+                    </h2>
+                </div>
+
+                {/* Texto */}
+                <div className="max-w-4xl mx-auto text-center">
+                    <p className="text-xl text-slate-600 font-light leading-relaxed line-clamp-3" dangerouslySetInnerHTML={{ __html: processDiplomaText(config.plantillaTexto, config, student) }} />
+                </div>
+            </div>
+
+            {/* --- ZONA 3: FOOTER (Rígida - Bottom 22%) --- */}
+            <div className="absolute bottom-0 left-0 w-full h-[22%] px-16 pb-12 z-30 flex flex-col justify-end">
+                {/* Fecha */}
+                <div className="text-right text-xs font-bold text-slate-400 mb-6 uppercase tracking-wider pr-4">
+                    {config.fechaLugar}
+                </div>
+
+                {/* Firmas */}
+                <div className="flex justify-center gap-x-20 items-end w-full px-4 border-t border-slate-100 pt-6">
+                    {config.firmas.map((signer) => (
+                        <div key={signer.id} className="text-center min-w-[200px] group relative">
+                            <div className="h-16 flex items-end justify-center mb-2 relative">
+                                {signer.firmaImage && <img src={signer.firmaImage} className="max-h-full max-w-[180px] object-contain drop-shadow-sm transition-transform group-hover:scale-105" />}
                             </div>
-                        ))}
-                    </div>
+                            <div className="h-0.5 w-full bg-slate-300 mb-2 group-hover:bg-slate-400 transition-colors"></div>
+                            <p className="font-bold text-sm text-slate-800 tracking-tight">{signer.nombre}</p>
+                            <p className="text-[10px] font-bold uppercase tracking-widest mt-0.5" style={{ color: secondary }}>{signer.cargo}</p>
+                        </div>
+                    ))}
                 </div>
+            </div>
 
-                {/* ID Discreto */}
-                <div className="absolute bottom-2 left-6 text-[9px] text-slate-300 font-mono">
-                    ID: {student.id.split('-')[0]}
-                </div>
+            {/* ID Discreto */}
+            <div className="absolute bottom-2 left-6 text-[9px] text-slate-200 font-mono z-10">
+                ID: {student.id.split('-')[0]}
             </div>
         </div>
     );

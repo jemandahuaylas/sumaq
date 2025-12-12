@@ -24,6 +24,8 @@ export type DesignTheme = 'modern-slate' | 'classic-blue' | 'elegant-gold' | 'mi
 export interface DiplomaConfig {
     // Identidad
     institucionNombre: string;
+    institucionFontSize?: number; // Size in px
+    lemaInstitucion?: string; // Slogan o Lema, ej: "Excelencia Educativa"
     tituloDiploma: string; // "DIPLOMA", "RECONOCIMIENTO"
     subtituloDiploma?: string; // "OTORGADO CON ALEGRÍA A:"
     nivel: string; // "Inicial", "Primaria", "Secundaria"
