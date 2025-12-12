@@ -131,9 +131,9 @@ export const ConfigPanel: React.FC = () => {
             id: 'secundaria-01',
             name: 'Onda Esmeralda',
             category: 'Secundaria',
-            previewColor: 'bg-emerald-50',
+            previewColor: 'bg-white',
             available: true,
-            defaultPalette: { primary: '#047857', secondary: '#0D9488', background: '#F0FDF4', text: '#065F46' }
+            defaultPalette: { primary: '#047857', secondary: '#0D9488', background: '#FFFFFF', text: '#1E293B' }
         },
         {
             id: 'secundaria-02',

@@ -15,8 +15,8 @@ interface TemplateProps {
 export const Secundaria01: React.FC<TemplateProps> = ({ config, student }) => {
     const primary = config.primaryColor || '#047857'; // Verde esmeralda
     const secondary = config.secondaryColor || '#0D9488'; // Teal
-    const bgColor = config.backgroundColor || '#F0FDF4';
-    const textColor = config.textColor || '#065F46'; // Verde oscuro en lugar de gris
+    const bgColor = config.backgroundColor || '#FFFFFF'; // Fondo blanco
+    const textColor = config.textColor || '#1E293B'; // Texto oscuro para contraste
 
     return (
         <div
