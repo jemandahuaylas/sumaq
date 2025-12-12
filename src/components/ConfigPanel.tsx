@@ -159,9 +159,9 @@ export const ConfigPanel: React.FC = () => {
         : AVAILABLE_DESIGNS.filter(d => d.category === activeCategory);
 
     return (
-        <div className="w-[450px] flex-shrink-0 bg-white border-r border-gray-200 h-screen flex shadow-2xl z-20 overflow-hidden font-sans">
-            {/* Sidebar Navigation */}
-            <div className="w-20 bg-slate-900 flex flex-col items-center py-8 gap-6 z-10 shadow-lg">
+        <div className="w-full md:w-[450px] flex-shrink-0 bg-white border-r border-gray-200 h-screen flex flex-col md:flex-row shadow-2xl z-20 overflow-hidden font-sans">
+            {/* Sidebar Navigation - Solo visible en desktop */}
+            <div className="hidden md:flex w-20 bg-slate-900 flex-col items-center py-8 gap-6 z-10 shadow-lg">
                 <div className="mb-2" title="Sumaq - Editor de Diplomas">
                     <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-amber-700 rounded-xl flex items-center justify-center shadow-lg">
                         <span className="text-white font-bold text-xl font-serif">S</span>
@@ -213,18 +213,35 @@ export const ConfigPanel: React.FC = () => {
 
             {/* Main Content Area */}
             <div className="flex-1 bg-slate-50 flex flex-col h-full overflow-hidden">
-                {/* Header */}
-                <div className="h-20 bg-white border-b border-slate-100 px-8 flex items-center justify-between shadow-sm flex-shrink-0">
-                    <div>
+                {/* Header - Responsive */}
+                <div className="h-16 md:h-20 bg-white border-b border-slate-100 px-4 md:px-8 flex items-center justify-between shadow-sm flex-shrink-0">
+                    {/* Logo móvil */}
+                    <div className="flex md:hidden items-center gap-3">
+                        <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-amber-700 rounded-xl flex items-center justify-center shadow-lg">
+                            <span className="text-white font-bold text-lg font-serif">S</span>
+                        </div>
+                        <div>
+                            <h2 className="text-base font-black text-slate-800 tracking-tight">Sumaq</h2>
+                            <p className="text-[10px] font-medium text-slate-400">Editor de Diplomas</p>
+                        </div>
+                    </div>
+                    {/* Desktop header */}
+                    <div className="hidden md:block">
                         <h2 className="text-xl font-black text-slate-800 tracking-tight">
                             {tabs.find(t => t.id === activeTab)?.label}
                         </h2>
                         <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Configuración</p>
                     </div>
+                    {/* Título móvil del tab activo */}
+                    <div className="md:hidden">
+                        <span className="text-xs font-bold text-slate-500 uppercase">
+                            {tabs.find(t => t.id === activeTab)?.label}
+                        </span>
+                    </div>
                 </div>
 
-                {/* Content Scrollable */}
-                <div className="flex-1 overflow-y-auto p-8">
+                {/* Content Scrollable - con padding extra en móviles para bottom nav */}
+                <div className="flex-1 overflow-y-auto p-4 md:p-8 pb-24 md:pb-8">
 
                     {activeTab === 'estudiantes' && (
                         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -625,6 +642,42 @@ export const ConfigPanel: React.FC = () => {
                         </div>
                     )}
 
+                </div>
+            </div>
+
+            {/* Bottom Navigation - Solo móvil */}
+            <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 shadow-lg z-50">
+                <div className="flex justify-around items-center py-2 px-2 safe-area-inset-bottom">
+                    {tabs.slice(0, 5).map((tab) => {
+                        const isActive = activeTab === tab.id;
+                        const Icon = tab.icon;
+                        return (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id as TabId)}
+                                className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all ${isActive
+                                    ? 'bg-slate-100'
+                                    : ''
+                                    }`}
+                            >
+                                <Icon size={20} className={isActive ? tab.text : 'text-slate-400'} />
+                                <span className={`text-[9px] font-bold ${isActive ? tab.text : 'text-slate-400'}`}>
+                                    {tab.label.slice(0, 6)}
+                                </span>
+                            </button>
+                        );
+                    })}
+                    {/* Más opciones dropdown para tabs adicionales */}
+                    <button
+                        onClick={() => setActiveTab('firmas')}
+                        className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all ${activeTab === 'firmas' ? 'bg-slate-100' : ''
+                            }`}
+                    >
+                        <PenTool size={20} className={activeTab === 'firmas' ? 'text-rose-600' : 'text-slate-400'} />
+                        <span className={`text-[9px] font-bold ${activeTab === 'firmas' ? 'text-rose-600' : 'text-slate-400'}`}>
+                            Firmas
+                        </span>
+                    </button>
                 </div>
             </div>
 

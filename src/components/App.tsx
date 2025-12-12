@@ -283,16 +283,16 @@ const AppContent = () => {
     return (
         <div className="flex h-screen bg-slate-100 overflow-hidden font-sans">
 
-            {/* Sidebar de Configuración */}
+            {/* Sidebar de Configuración - Pantalla completa en móvil */}
             <ConfigPanel />
 
-            {/* Área Principal */}
-            <div className="flex-1 flex flex-col relative h-full min-w-0 overflow-hidden">
+            {/* Área Principal - Solo visible en desktop */}
+            <div className="hidden md:flex flex-1 flex-col relative h-full min-w-0 overflow-hidden">
 
                 {/* Barra Superior de Herramientas */}
                 <header className="h-20 bg-white border-b border-slate-100 flex items-center justify-between px-8 shadow-sm z-10">
                     <div className="flex items-center gap-4">
-                        <h1 className="font-bold text-lg text-slate-800 tracking-tight">Generador de Diplomas</h1>
+                        <h1 className="font-bold text-lg text-slate-800 tracking-tight">Vista Previa</h1>
                         <span className="bg-slate-100 text-slate-500 text-xs px-2 py-1 rounded-full">{students.length} estudiantes</span>
                     </div>
 
