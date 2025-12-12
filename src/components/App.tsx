@@ -1,15 +1,46 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { ConfigPanel } from './ConfigPanel';
 import { DiplomaPreview, DIPLOMA_DESIGNS } from './DiplomaPreview';
 import type { DiplomaPreviewHandle } from './DiplomaPreview';
 import { useDiplomaStore } from '../store/diplomaStore';
 import { NotificationProvider, useNotification } from './NotificationProvider';
-import { Download, ChevronLeft, ChevronRight, FileDown, Archive, FileText, ChevronDown, Loader2 } from 'lucide-react';
+import { Download, ChevronLeft, ChevronRight, FileDown, Archive, FileText, ChevronDown, Loader2, Users } from 'lucide-react';
 import { saveAs } from 'file-saver';
 import JSZip from 'jszip';
 import { domToJpeg } from 'modern-screenshot';
 import { jsPDF } from 'jspdf';
 import type { Student } from '../types';
+
+// Hook para simular usuarios en línea (basado en hora del día)
+const useSimulatedOnlineUsers = () => {
+    const [count, setCount] = useState(0);
+
+    useEffect(() => {
+        const getBaseCount = () => {
+            const hour = new Date().getHours();
+            // Horario laboral peruano (8am-6pm) = más usuarios
+            if (hour >= 8 && hour < 12) return Math.floor(Math.random() * 30) + 35; // 35-65 mañana
+            if (hour >= 12 && hour < 14) return Math.floor(Math.random() * 20) + 25; // 25-45 almuerzo
+            if (hour >= 14 && hour < 18) return Math.floor(Math.random() * 40) + 45; // 45-85 tarde (pico)
+            if (hour >= 18 && hour < 21) return Math.floor(Math.random() * 25) + 20; // 20-45 noche temprana
+            return Math.floor(Math.random() * 10) + 5; // 5-15 madrugada
+        };
+
+        const updateCount = () => {
+            const base = getBaseCount();
+            // Pequeña fluctuación aleatoria (-3 a +3)
+            const fluctuation = Math.floor(Math.random() * 7) - 3;
+            setCount(Math.max(1, base + fluctuation));
+        };
+
+        updateCount();
+        // Actualizar cada 5-10 segundos para parecer real
+        const interval = setInterval(updateCount, 5000 + Math.random() * 5000);
+        return () => clearInterval(interval);
+    }, []);
+
+    return count;
+};
 
 // Configuración de exportación
 const EXPORT_CONFIG = {
@@ -30,6 +61,7 @@ const AppContent = () => {
     const [generatingProgress, setGeneratingProgress] = useState<string>('');
     const [showDownloadMenu, setShowDownloadMenu] = useState(false);
     const diplomaPreviewRef = useRef<DiplomaPreviewHandle>(null);
+    const onlineUsers = useSimulatedOnlineUsers();
 
     // Navegación en Preview
     const nextStudent = () => {
@@ -292,6 +324,13 @@ const AppContent = () => {
                             <span className="text-white font-bold text-sm font-serif">S</span>
                         </div>
                         <span className="text-sm font-bold text-slate-700">Sumaq</span>
+                        <div className="flex items-center gap-1 bg-emerald-50 text-emerald-700 text-[10px] px-1.5 py-0.5 rounded-full border border-emerald-200">
+                            <span className="relative flex h-1.5 w-1.5">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+                            </span>
+                            <span className="font-semibold">{onlineUsers}</span>
+                        </div>
                     </div>
 
                     {/* Botón descargar móvil */}
@@ -324,8 +363,8 @@ const AppContent = () => {
                                     key={student.id}
                                     onClick={() => setCurrentStudentIndex(index)}
                                     className={`flex-shrink-0 snap-center px-3 py-2 rounded-lg text-xs font-medium transition-all ${index === currentStudentIndex
-                                            ? 'bg-amber-500 text-white shadow-md'
-                                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                        ? 'bg-amber-500 text-white shadow-md'
+                                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                                         }`}
                                 >
                                     <span className="block truncate max-w-[80px]">
@@ -350,6 +389,14 @@ const AppContent = () => {
                     <div className="flex items-center gap-4">
                         <h1 className="font-bold text-lg text-slate-800 tracking-tight">Vista Previa</h1>
                         <span className="bg-slate-100 text-slate-500 text-xs px-2 py-1 rounded-full">{students.length} estudiantes</span>
+                        <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-700 text-xs px-2.5 py-1 rounded-full border border-emerald-200">
+                            <span className="relative flex h-2 w-2">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                            </span>
+                            <span className="font-semibold">{onlineUsers}</span>
+                            <span className="text-emerald-600">en línea</span>
+                        </div>
                     </div>
 
                     <div className="flex items-center gap-4">
