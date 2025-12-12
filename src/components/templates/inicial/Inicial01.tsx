@@ -12,7 +12,23 @@ export const Inicial01: React.FC<TemplateProps> = ({ config, student }) => {
     const secondary = config.secondaryColor || '#EC4899'; // Default pink
 
     return (
-        <div className="w-full h-full relative bg-amber-50 overflow-hidden font-sans text-slate-800">
+        <div className="w-full h-full relative overflow-hidden font-sans" style={{ backgroundColor: config.backgroundColor || '#FFF7ED', color: config.textColor || '#1e293b' }}>
+            {/* Medalla Honorífica */}
+            {config.mostrarMedalla && (
+                <div className="absolute top-20 left-24 z-30 drop-shadow-xl animate-in zoom-in duration-700">
+                    <svg width="90" height="90" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        {/* Cintas */}
+                        <path d="M30 70 L30 15 L70 15 L70 70 L50 60 L30 70 Z" fill="#EF4444" />
+                        <path d="M40 70 L40 15 L60 15 L60 70 L50 62 L40 70 Z" fill="#DC2626" />
+                        {/* Medalla Circular */}
+                        <circle cx="50" cy="40" r="25" fill="#FBBF24" stroke="#D97706" strokeWidth="3" />
+                        <circle cx="50" cy="40" r="20" fill="#F59E0B" stroke="#D97706" strokeWidth="1" strokeDasharray="2 2" />
+                        {/* Estrella Central */}
+                        <path d="M50 28 L54 36 L62 37 L56 42 L58 50 L50 46 L42 50 L44 42 L38 37 L46 36 L50 28 Z" fill="#FEF3C7" />
+                    </svg>
+                </div>
+            )}
+
             {/* Elementos Decorativos de Fondo */}
             <div className="absolute top-0 right-0 w-64 h-64 rounded-bl-full opacity-20 z-0" style={{ backgroundColor: secondary }}></div>
             <div className="absolute bottom-0 left-0 w-80 h-80 rounded-tr-full opacity-20 z-0" style={{ backgroundColor: primary }}></div>

@@ -12,7 +12,19 @@ export const Primaria01: React.FC<TemplateProps> = ({ config, student }) => {
     const secondary = config.secondaryColor || '#14B8A6'; // Default teal
 
     return (
-        <div className="w-full h-full relative bg-white overflow-hidden text-slate-800">
+        <div className="w-full h-full relative overflow-hidden text-slate-800" style={{ backgroundColor: config.backgroundColor || '#ffffff', color: config.textColor || '#1e293b' }}>
+            {/* Medalla Honorífica */}
+            {config.mostrarMedalla && (
+                <div className="absolute top-28 right-8 z-30 drop-shadow-xl animate-in fade-in zoom-in duration-700">
+                    <svg width="80" height="120" viewBox="0 0 80 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M40 0L80 20V50C80 85 40 120 40 120C40 120 0 85 0 50V20L40 0Z" fill="#F59E0B" fillOpacity="0.9" />
+                        <path d="M40 8L72 24V50C72 80 40 108 40 108C40 108 8 80 8 50V24L40 8Z" stroke="#B45309" strokeWidth="2" />
+                        <path d="M40 25V85M15 55H65" stroke="#B45309" strokeWidth="2" strokeOpacity="0.3" />
+                        <circle cx="40" cy="55" r="15" fill="#FEF3C7" stroke="#B45309" strokeWidth="2" />
+                        <path d="M35 55L38 60L45 50" stroke="#B45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                </div>
+            )}
             {/* Fondo Geométrico */}
             <svg className="absolute inset-0 w-full h-full opacity-10 z-0" xmlns="http://www.w3.org/2000/svg">
                 <defs><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke={primary} strokeWidth="1" /></pattern></defs>

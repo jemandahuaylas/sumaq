@@ -1,24 +1,37 @@
 import React, { useState } from 'react';
 import { useDiplomaStore } from '../store/diplomaStore';
 import { importStudentsFromExcel } from '../lib/excel-utils';
-import { Upload, X, Plus, Users, School, FileText, PenTool, LayoutTemplate, Palette, Grid, Sliders } from 'lucide-react';
+import { Upload, X, Plus, Users, School, FileText, PenTool, LayoutTemplate, Palette, Grid, Sliders, Pencil, RotateCcw } from 'lucide-react';
+import { StudentVerificationModal } from './StudentVerificationModal';
+import type { Student } from '../types';
 
 type TabId = 'estudiantes' | 'institucion' | 'disenos' | 'estilo' | 'contenido' | 'firmas';
 
 export const ConfigPanel: React.FC = () => {
     const { config, students, setStudents, updateConfig, updateSigner, removeSigner, addSigner } = useDiplomaStore();
     const [activeTab, setActiveTab] = useState<TabId>('estudiantes');
+    const [showVerificationModal, setShowVerificationModal] = useState(false);
+    const [pendingStudents, setPendingStudents] = useState<Student[]>([]);
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files?.[0]) {
             try {
                 const imported = await importStudentsFromExcel(e.target.files[0]);
-                setStudents(imported);
+                setPendingStudents(imported);
+                setShowVerificationModal(true);
             } catch (error) {
                 console.error("Error al importar:", error);
                 alert("Error al leer el archivo Excel. Asegúrate de usar la plantilla correcta.");
             }
+            // Reset input value to allow re-uploading the same file
+            e.target.value = '';
         }
+    };
+
+    const handleConfirmImport = (verifiedStudents: Student[]) => {
+        setStudents(verifiedStudents);
+        setShowVerificationModal(false);
+        setPendingStudents([]);
     };
 
     const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>, key: 'logoColegio' | 'logoUgel' | 'logoMinedu') => {
@@ -55,9 +68,30 @@ export const ConfigPanel: React.FC = () => {
     const [activeCategory, setActiveCategory] = useState('Todos');
 
     const AVAILABLE_DESIGNS = [
-        { id: 'inicial-01', name: 'Alegría Infantil', category: 'Infantil', previewColor: 'bg-orange-100', available: true },
-        { id: 'primaria-01', name: 'Mérito Académico', category: 'Primaria', previewColor: 'bg-blue-100', available: true },
-        { id: 'secundaria-01', name: 'Solemne Clásico', category: 'Secundaria', previewColor: 'bg-slate-100', available: true },
+        {
+            id: 'inicial-01',
+            name: 'Alegría Infantil',
+            category: 'Infantil',
+            previewColor: 'bg-orange-100',
+            available: true,
+            defaultPalette: { primary: '#FB923C', secondary: '#F472B6', background: '#FFF7ED', text: '#1e293b' }
+        },
+        {
+            id: 'primaria-01',
+            name: 'Mérito Académico',
+            category: 'Primaria',
+            previewColor: 'bg-blue-100',
+            available: true,
+            defaultPalette: { primary: '#2563EB', secondary: '#FBBF24', background: '#ffffff', text: '#1e293b' }
+        },
+        {
+            id: 'secundaria-01',
+            name: 'Solemne Clásico',
+            category: 'Secundaria',
+            previewColor: 'bg-slate-100',
+            available: true,
+            defaultPalette: { primary: '#0F172A', secondary: '#D97706', background: '#FAFAF9', text: '#1e293b' }
+        },
         // Placeholders para demostración de arquitectura escalable (30+ diseños)
         ...Array.from({ length: 10 }).map((_, i) => ({
             id: `infantil-${i + 2}`, name: `Infantil Creativo ${i + 1}`, category: 'Infantil', previewColor: 'bg-pink-50', available: false
@@ -162,17 +196,28 @@ export const ConfigPanel: React.FC = () => {
                                                 </div>
                                             ))}
                                         </div>
-                                        <div className="flex gap-2">
-                                            <label className="cursor-pointer flex-1 py-2 bg-white border border-slate-200 text-slate-600 hover:border-blue-400 hover:text-blue-600 rounded-lg text-xs font-bold text-center transition-colors">
-                                                Cambiar
-                                                <input type="file" accept=".xlsx, .xls" className="hidden" onChange={handleFileUpload} />
-                                            </label>
+                                        <div className="flex flex-col gap-2">
                                             <button
-                                                onClick={() => setStudents([])}
-                                                className="flex-1 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-xs font-bold transition-colors"
+                                                onClick={() => {
+                                                    setPendingStudents(students);
+                                                    setShowVerificationModal(true);
+                                                }}
+                                                className="w-full py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1"
                                             >
-                                                Limpiar
+                                                <Pencil size={14} /> Editar Lista
                                             </button>
+                                            <div className="flex gap-2">
+                                                <label className="cursor-pointer flex-1 py-2 bg-white border border-slate-200 text-slate-600 hover:border-blue-400 hover:text-blue-600 rounded-lg text-xs font-bold text-center transition-colors">
+                                                    Cambiar
+                                                    <input type="file" accept=".xlsx, .xls" className="hidden" onChange={handleFileUpload} />
+                                                </label>
+                                                <button
+                                                    onClick={() => setStudents([])}
+                                                    className="flex-1 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-xs font-bold transition-colors"
+                                                >
+                                                    Limpiar
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 )}
@@ -257,7 +302,21 @@ export const ConfigPanel: React.FC = () => {
                                 {filteredDesigns.map((design) => (
                                     <button
                                         key={design.id}
-                                        onClick={() => design.available && updateConfig({ selectedDesign: design.id })}
+                                        onClick={() => {
+                                            if (design.available) {
+                                                const updates: any = { selectedDesign: design.id };
+                                                // @ts-ignore
+                                                if (design.defaultPalette) {
+                                                    // @ts-ignore
+                                                    const p = design.defaultPalette;
+                                                    updates.primaryColor = p.primary;
+                                                    updates.secondaryColor = p.secondary;
+                                                    updates.backgroundColor = p.background;
+                                                    updates.textColor = p.text;
+                                                }
+                                                updateConfig(updates);
+                                            }
+                                        }}
                                         disabled={!design.available}
                                         className={`relative p-4 rounded-xl border-2 text-left transition-all group overflow-hidden ${config.selectedDesign === design.id
                                             ? 'border-amber-500 bg-amber-50 ring-2 ring-amber-200 ring-offset-2'
@@ -305,7 +364,29 @@ export const ConfigPanel: React.FC = () => {
                     {activeTab === 'estilo' && (
                         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                             <div className="space-y-4">
-                                <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Paleta de Colores</h3>
+                                <div className="flex justify-between items-center">
+                                    <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Paleta de Colores</h3>
+                                    <button
+                                        onClick={() => {
+                                            const currentDesign = AVAILABLE_DESIGNS.find(d => d.id === config.selectedDesign);
+                                            // @ts-ignore
+                                            if (currentDesign?.defaultPalette) {
+                                                // @ts-ignore
+                                                const p = currentDesign.defaultPalette;
+                                                updateConfig({
+                                                    primaryColor: p.primary,
+                                                    secondaryColor: p.secondary,
+                                                    backgroundColor: p.background,
+                                                    textColor: p.text
+                                                });
+                                            }
+                                        }}
+                                        className="text-xs flex items-center gap-1 text-slate-400 hover:text-blue-600 transition-colors"
+                                        title="Reestablecer colores originales del diseño"
+                                    >
+                                        <RotateCcw size={12} /> Reestablecer
+                                    </button>
+                                </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     {[
                                         { label: 'Principal', key: 'primaryColor', default: '#2563EB' },
@@ -448,6 +529,13 @@ export const ConfigPanel: React.FC = () => {
 
                 </div>
             </div>
+
+            <StudentVerificationModal
+                isOpen={showVerificationModal}
+                onClose={() => setShowVerificationModal(false)}
+                onConfirm={handleConfirmImport}
+                initialStudents={pendingStudents}
+            />
         </div>
     );
 };

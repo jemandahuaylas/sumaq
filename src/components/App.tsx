@@ -3,14 +3,16 @@ import { ConfigPanel } from './ConfigPanel';
 import { DiplomaPreview } from './DiplomaPreview';
 import { DiplomaDocument } from './pdf/DiplomaDocument';
 import { useDiplomaStore } from '../store/diplomaStore';
-import { Download, ChevronLeft, ChevronRight, FileDown } from 'lucide-react';
+import { Download, ChevronLeft, ChevronRight, FileDown, Archive, FileText, ChevronDown } from 'lucide-react';
 import { pdf } from '@react-pdf/renderer';
 import { saveAs } from 'file-saver';
+import JSZip from 'jszip';
 
 export const App = () => {
     const { config, students } = useDiplomaStore();
     const [currentStudentIndex, setCurrentStudentIndex] = useState(0);
     const [isGenerating, setIsGenerating] = useState(false);
+    const [showDownloadMenu, setShowDownloadMenu] = useState(false);
 
     // Navegación en Preview
     const nextStudent = () => {
@@ -20,23 +22,60 @@ export const App = () => {
         if (currentStudentIndex > 0) setCurrentStudentIndex(prev => prev - 1);
     };
 
-    const handleDownloadPDF = async () => {
+    const handleDownloadMultipage = async () => {
         setIsGenerating(true);
+        setShowDownloadMenu(false);
         try {
-            // Generar documento con TODOS los estudiantes
-            // Si no hay estudiantes, usar un dummy para demo
             const studentsToPrint = students.length > 0 ? students : [{
                 id: 'demo', nombres: 'NOMBRE ESTUDIANTE', grado: 'GRADO', nivel: 'NIVEL', puesto: 'PUESTO'
             }];
-
-            const blob = await pdf(
-                <DiplomaDocument config={config} students={studentsToPrint} />
-            ).toBlob();
-
-            saveAs(blob, `Diplomas-${config.institucionNombre}.pdf`);
+            const blob = await pdf(<DiplomaDocument config={config} students={studentsToPrint} />).toBlob();
+            saveAs(blob, `Diplomas-Completo-${config.institucionNombre || 'Institucion'}.pdf`);
         } catch (error) {
             console.error("Error generando PDF:", error);
-            alert("Hubo un error generando el PDF. Revisa la consola.");
+            alert("Hubo un error generando el PDF.");
+        } finally {
+            setIsGenerating(false);
+        }
+    };
+
+    const handleDownloadZip = async () => {
+        if (students.length === 0) return handleDownloadMultipage();
+        setIsGenerating(true);
+        setShowDownloadMenu(false);
+        try {
+            const zip = new JSZip();
+            const folder = zip.folder(`Diplomas-${config.institucionNombre || 'Export'}`);
+
+            // Podríamos mostrar progreso aquí, pero por ahora solo el spinner global
+            for (let i = 0; i < students.length; i++) {
+                const s = students[i];
+                const blob = await pdf(<DiplomaDocument config={config} students={[s]} />).toBlob();
+                const cleanName = s.nombres.replace(/[^a-z0-9\s-]/gi, '').trim() || `Estudiante-${i + 1}`;
+                folder?.file(`${cleanName}.pdf`, blob);
+            }
+
+            const content = await zip.generateAsync({ type: "blob" });
+            saveAs(content, `Diplomas-${config.institucionNombre || 'Export'}.zip`);
+        } catch (error) {
+            console.error("Error generando ZIP:", error);
+            alert("Hubo un error generando el ZIP.");
+        } finally {
+            setIsGenerating(false);
+        }
+    };
+
+    const handleDownloadSingle = async () => {
+        setIsGenerating(true);
+        setShowDownloadMenu(false);
+        try {
+            const s = students.length > 0 ? students[currentStudentIndex] : {
+                id: 'demo', nombres: 'NOMBRE ESTUDIANTE', grado: 'GRADO', nivel: 'NIVEL', puesto: 'PUESTO'
+            };
+            const blob = await pdf(<DiplomaDocument config={config} students={[s]} />).toBlob();
+            saveAs(blob, `Diploma-${(s as any).nombres || 'Demo'}.pdf`);
+        } catch (error) {
+            console.error("Error generando PDF individual:", error);
         } finally {
             setIsGenerating(false);
         }
@@ -71,19 +110,61 @@ export const App = () => {
                             </div>
                         )}
 
-                        <button
-                            onClick={handleDownloadPDF}
-                            disabled={isGenerating}
-                            className={`flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-md hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/20 active:scale-95 ${isGenerating ? 'opacity-70 cursor-wait' : ''}`}
-                        >
-                            {isGenerating ? (
-                                <>Generando...</>
-                            ) : (
+                        <div className="relative">
+                            <button
+                                onClick={() => !isGenerating && setShowDownloadMenu(!showDownloadMenu)}
+                                className={`flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/20 active:scale-95 ${isGenerating ? 'opacity-70 cursor-wait' : ''}`}
+                            >
+                                {isGenerating ? (
+                                    <>Generando...</>
+                                ) : (
+                                    <>
+                                        <Download size={18} /> Descargar <ChevronDown size={14} className={`transition-transform ${showDownloadMenu ? 'rotate-180' : ''}`} />
+                                    </>
+                                )}
+                            </button>
+
+                            {showDownloadMenu && !isGenerating && (
                                 <>
-                                    <FileDown size={18} /> Descargar PDF
+                                    <div className="fixed inset-0 z-40" onClick={() => setShowDownloadMenu(false)}></div>
+                                    <div className="absolute right-0 top-full mt-2 w-72 bg-white rounded-xl shadow-xl border border-slate-100 p-2 z-50 animate-in fade-in zoom-in-95 origin-top-right">
+                                        <div className="space-y-1">
+                                            <button onClick={handleDownloadMultipage} className="w-full text-left px-3 py-3 hover:bg-slate-50 rounded-lg flex items-center gap-4 group transition-colors">
+                                                <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl group-hover:bg-blue-100 transition-colors">
+                                                    <FileText size={20} />
+                                                </div>
+                                                <div>
+                                                    <span className="block text-sm font-bold text-slate-700">PDF Multipágina</span>
+                                                    <span className="text-[10px] text-slate-400 block leading-tight">Un solo archivo con todos los diplomas</span>
+                                                </div>
+                                            </button>
+
+                                            <button onClick={handleDownloadZip} className="w-full text-left px-3 py-3 hover:bg-slate-50 rounded-lg flex items-center gap-4 group transition-colors">
+                                                <div className="p-2.5 bg-amber-50 text-amber-600 rounded-xl group-hover:bg-amber-100 transition-colors">
+                                                    <Archive size={20} />
+                                                </div>
+                                                <div>
+                                                    <span className="block text-sm font-bold text-slate-700">Descargar ZIP</span>
+                                                    <span className="text-[10px] text-slate-400 block leading-tight">Archivos PDF separados por estudiante</span>
+                                                </div>
+                                            </button>
+
+                                            <div className="h-px bg-slate-100 my-1 mx-3"></div>
+
+                                            <button onClick={handleDownloadSingle} className="w-full text-left px-3 py-3 hover:bg-slate-50 rounded-lg flex items-center gap-4 group transition-colors">
+                                                <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl group-hover:bg-emerald-100 transition-colors">
+                                                    <FileDown size={20} />
+                                                </div>
+                                                <div>
+                                                    <span className="block text-sm font-bold text-slate-700">Diploma Actual</span>
+                                                    <span className="text-[10px] text-slate-400 block leading-tight">Solo el estudiante visible ({students[currentStudentIndex]?.nombres.split(' ')[0] || 'Demo'})</span>
+                                                </div>
+                                            </button>
+                                        </div>
+                                    </div>
                                 </>
                             )}
-                        </button>
+                        </div>
                     </div>
                 </header>
 

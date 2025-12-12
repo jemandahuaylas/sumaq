@@ -12,7 +12,19 @@ export const Secundaria01: React.FC<TemplateProps> = ({ config, student }) => {
     const secondary = config.secondaryColor || '#CA8A04'; // Default yellow-600
 
     return (
-        <div className="w-full h-full relative bg-[#FDFBF7] overflow-hidden text-slate-900 font-serif">
+        <div className="w-full h-full relative overflow-hidden font-serif" style={{ backgroundColor: config.backgroundColor || '#FAFAF9', color: config.textColor || '#0F172A' }}>
+            {/* Medalla Honorífica Solemne */}
+            {config.mostrarMedalla && (
+                <div className="absolute top-10 right-10 z-30 opacity-90 mix-blend-multiply">
+                    <svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="50" cy="50" r="45" stroke={secondary} strokeWidth="2" strokeDasharray="4 2" />
+                        <circle cx="50" cy="50" r="40" stroke={primary} strokeWidth="1" />
+                        <path d="M50 10 L60 40 L90 50 L60 60 L50 90 L40 60 L10 50 L40 40 Z" fill={secondary} fillOpacity="0.2" />
+                        <circle cx="50" cy="50" r="25" fill={primary} fillOpacity="0.1" />
+                        <text x="50" y="53" textAnchor="middle" fontSize="10" fill={primary} fontFamily="serif" fontWeight="bold">HONOR</text>
+                    </svg>
+                </div>
+            )}
             {/* Marco Doble Elegante */}
             <div className="absolute inset-4 border z-20" style={{ borderColor: primary }}></div>
             <div className="absolute inset-6 border z-20" style={{ borderColor: secondary }}></div>
