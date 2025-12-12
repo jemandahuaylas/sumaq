@@ -6,9 +6,9 @@ import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, h
 import { CSS } from '@dnd-kit/utilities';
 import { Upload, X, Plus, Users, School, FileText, PenTool, LayoutTemplate, Palette, Grid, Sliders, Pencil, RotateCcw, Image as ImageIcon, Trash2 } from 'lucide-react';
 import { StudentVerificationModal } from './StudentVerificationModal';
-import type { Student } from '../types';
-
-type TabId = 'estudiantes' | 'institucion' | 'disenos' | 'estilo' | 'contenido' | 'firmas';
+import { TemplateEditor } from './TemplateEditor';
+import { useNotification } from './NotificationProvider';
+import type { Student, TabId } from '../types';
 
 const SortableLogoItem = ({ id, src, onRemove }: { id: string, src: string, onRemove: () => void }) => {
     const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
@@ -29,8 +29,8 @@ const SortableLogoItem = ({ id, src, onRemove }: { id: string, src: string, onRe
 };
 
 export const ConfigPanel: React.FC = () => {
-    const { config, students, setStudents, updateConfig, updateSigner, removeSigner, addSigner } = useDiplomaStore();
-    const [activeTab, setActiveTab] = useState<TabId>('estudiantes');
+    const { config, students, setStudents, updateConfig, updateSigner, removeSigner, addSigner, activeTab, setActiveTab, resetAll } = useDiplomaStore();
+    const { showToast, showConfirm } = useNotification();
     const [showVerificationModal, setShowVerificationModal] = useState(false);
     const [pendingStudents, setPendingStudents] = useState<Student[]>([]);
 
@@ -49,7 +49,7 @@ export const ConfigPanel: React.FC = () => {
                 setShowVerificationModal(true);
             } catch (error) {
                 console.error("Error al importar:", error);
-                alert("Error al leer el archivo Excel. Asegúrate de usar la plantilla correcta.");
+                showToast('error', 'Error al importar', 'No se pudo leer el archivo Excel. Verifica que uses la plantilla correcta.');
             }
             // Reset input value to allow re-uploading the same file
             e.target.value = '';
@@ -162,9 +162,9 @@ export const ConfigPanel: React.FC = () => {
         <div className="w-[450px] flex-shrink-0 bg-white border-r border-gray-200 h-screen flex shadow-2xl z-20 overflow-hidden font-sans">
             {/* Sidebar Navigation */}
             <div className="w-20 bg-slate-900 flex flex-col items-center py-8 gap-6 z-10 shadow-lg">
-                <div className="mb-2">
-                    <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
-                        <LayoutTemplate className="text-white" size={24} />
+                <div className="mb-2" title="Sumaq - Editor de Diplomas">
+                    <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-amber-700 rounded-xl flex items-center justify-center shadow-lg">
+                        <span className="text-white font-bold text-xl font-serif">S</span>
                     </div>
                 </div>
 
@@ -185,6 +185,30 @@ export const ConfigPanel: React.FC = () => {
                         </button>
                     );
                 })}
+
+                {/* Espaciador flexible */}
+                <div className="flex-1"></div>
+
+                {/* Botón Restablecer Todo */}
+                <button
+                    onClick={async () => {
+                        const confirmed = await showConfirm({
+                            title: '¿Restablecer todo?',
+                            message: 'Se eliminarán todos los estudiantes, logos, firmas y configuración. Esta acción no se puede deshacer.',
+                            confirmText: 'Sí, restablecer',
+                            cancelText: 'Cancelar',
+                            type: 'danger'
+                        });
+                        if (confirmed) {
+                            resetAll();
+                            showToast('success', 'Configuración restablecida', 'Todos los datos han sido eliminados.');
+                        }
+                    }}
+                    className="w-12 h-12 rounded-xl flex items-center justify-center transition-all hover:bg-red-500/20 group"
+                    title="Restablecer Todo"
+                >
+                    <RotateCcw size={20} className="text-slate-500 group-hover:text-red-400 transition-colors" />
+                </button>
             </div>
 
             {/* Main Content Area */}
@@ -530,28 +554,11 @@ export const ConfigPanel: React.FC = () => {
                                 />
                             </div>
 
-                            <div>
-                                <div className="flex justify-between items-end mb-2">
-                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Plantilla de Texto</label>
-                                </div>
-                                <div className="flex gap-2 mb-3 overflow-x-auto pb-2">
-                                    {[
-                                        { label: '🏆 Mérito', text: "Estudiante del {{Grado}} del nivel {{Nivel}}, por haber ocupado el {{Puesto}} en mérito al logro de los aprendizajes durante el presente año escolar en la {{Institucion}}." },
-                                        { label: '🎓 Culminación', text: "Por haber culminado satisfactoriamente sus estudios del nivel {{Nivel}} en la {{Institucion}}, demostrando perseverancia y responsabilidad." },
-                                        { label: '⭐ Conducta', text: "En reconocimiento a su excelente conducta, valores y alto sentido de responsabilidad demostrado durante el año escolar en el {{Grado}}." }
-                                    ].map((t, i) => (
-                                        <button key={i} onClick={() => updateConfig({ plantillaTexto: t.text })} className="flex-shrink-0 px-3 py-1.5 bg-violet-50 text-violet-700 text-[10px] font-bold rounded-lg hover:bg-violet-100 border border-violet-100">
-                                            {t.label}
-                                        </button>
-                                    ))}
-                                </div>
-
-                                <textarea
-                                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm min-h-[140px] leading-relaxed focus:ring-2 focus:ring-violet-500 outline-none resize-none shadow-sm text-slate-600"
-                                    value={config.plantillaTexto}
-                                    onChange={(e) => updateConfig({ plantillaTexto: e.target.value })}
-                                />
-                            </div>
+                            {/* Editor de Plantilla con Tokens Visuales */}
+                            <TemplateEditor
+                                value={config.plantillaTexto}
+                                onChange={(value) => updateConfig({ plantillaTexto: value })}
+                            />
 
                             <div>
                                 <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Lugar y Fecha</label>

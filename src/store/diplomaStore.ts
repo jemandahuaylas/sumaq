@@ -31,8 +31,11 @@ export const useDiplomaStore = create<AppState>()(
         (set) => ({
             students: [],
             config: INITIAL_CONFIG,
+            activeTab: 'estudiantes',
 
             setStudents: (students) => set({ students }),
+
+            setActiveTab: (tab) => set({ activeTab: tab }),
 
             updateConfig: (partial) => set((state) => ({
                 config: { ...state.config, ...partial }
@@ -60,6 +63,12 @@ export const useDiplomaStore = create<AppState>()(
                     )
                 }
             })),
+
+            resetAll: () => set({
+                students: [],
+                config: INITIAL_CONFIG,
+                activeTab: 'estudiantes',
+            }),
         }),
         {
             name: 'diploma-storage',

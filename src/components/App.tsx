@@ -3,6 +3,7 @@ import { ConfigPanel } from './ConfigPanel';
 import { DiplomaPreview, DIPLOMA_DESIGNS } from './DiplomaPreview';
 import type { DiplomaPreviewHandle } from './DiplomaPreview';
 import { useDiplomaStore } from '../store/diplomaStore';
+import { NotificationProvider, useNotification } from './NotificationProvider';
 import { Download, ChevronLeft, ChevronRight, FileDown, Archive, FileText, ChevronDown, Loader2 } from 'lucide-react';
 import { saveAs } from 'file-saver';
 import JSZip from 'jszip';
@@ -20,8 +21,10 @@ const EXPORT_CONFIG = {
     pageHeight: 210,
 };
 
-export const App = () => {
+// Componente interno que usa el contexto de notificaciones
+const AppContent = () => {
     const { config, students } = useDiplomaStore();
+    const { showToast } = useNotification();
     const [currentStudentIndex, setCurrentStudentIndex] = useState(0);
     const [isGenerating, setIsGenerating] = useState(false);
     const [generatingProgress, setGeneratingProgress] = useState<string>('');
@@ -174,7 +177,7 @@ export const App = () => {
             saveAs(blob, `Diploma-${cleanName}.pdf`);
         } catch (error) {
             console.error('Error generando PDF individual:', error);
-            alert(`Error: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+            showToast('error', 'Error al generar PDF', error instanceof Error ? error.message : 'Error desconocido');
         } finally {
             setIsGenerating(false);
             setGeneratingProgress('');
@@ -220,7 +223,7 @@ export const App = () => {
             saveAs(blob, `Diplomas-${institutionName}.pdf`);
         } catch (error) {
             console.error('Error generando PDF multipágina:', error);
-            alert('Hubo un error generando el PDF multipágina.');
+            showToast('error', 'Error al generar PDF', 'Hubo un problema generando el documento multipágina.');
         } finally {
             setIsGenerating(false);
             setGeneratingProgress('');
@@ -270,7 +273,7 @@ export const App = () => {
             saveAs(content, `Diplomas-${institutionName}.zip`);
         } catch (error) {
             console.error('Error generando ZIP:', error);
-            alert('Hubo un error generando el ZIP.');
+            showToast('error', 'Error al generar ZIP', 'Hubo un problema comprimiendo los archivos.');
         } finally {
             setIsGenerating(false);
             setGeneratingProgress('');
@@ -380,3 +383,10 @@ export const App = () => {
         </div>
     );
 };
+
+// Exportar App con el Provider de notificaciones
+export const App = () => (
+    <NotificationProvider>
+        <AppContent />
+    </NotificationProvider>
+);

@@ -56,13 +56,18 @@ export interface DiplomaConfig {
     orientacion: 'landscape' | 'portrait';
 }
 
+// Tipos de tabs disponibles
+export type TabId = 'estudiantes' | 'institucion' | 'disenos' | 'estilo' | 'contenido' | 'firmas';
 
 export interface AppState {
     students: Student[];
     config: DiplomaConfig;
+    activeTab: TabId;
     setStudents: (students: Student[]) => void;
     updateConfig: (partial: Partial<DiplomaConfig>) => void;
+    setActiveTab: (tab: TabId) => void;
     addSigner: () => void;
     removeSigner: (id: string) => void;
     updateSigner: (id: string, partial: Partial<Signer>) => void;
+    resetAll: () => void;
 }
