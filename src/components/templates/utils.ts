@@ -40,3 +40,55 @@ export const processDiplomaText = (text: string, config: DiplomaConfig, data: St
 
     return processed;
 };
+
+/**
+ * Calcula el tamaño de fuente óptimo para nombres de estudiantes
+ * basándose en la longitud del texto para evitar truncado.
+ * 
+ * @param name - Nombre completo del estudiante
+ * @param baseFontSize - Tamaño base en rem (por defecto 3rem = 48px)
+ * @returns Tamaño de fuente en rem como string (ej: "2.5rem")
+ */
+export const getAdaptiveFontSize = (name: string, baseFontSize: number = 3): string => {
+    const length = name.length;
+
+    // Escala logarítmica para un ajuste más suave
+    if (length > 60) return `${baseFontSize * 0.45}rem`; // 1.35rem para nombres muy largos
+    if (length > 50) return `${baseFontSize * 0.5}rem`;  // 1.5rem
+    if (length > 45) return `${baseFontSize * 0.55}rem`; // 1.65rem
+    if (length > 40) return `${baseFontSize * 0.6}rem`;  // 1.8rem
+    if (length > 35) return `${baseFontSize * 0.7}rem`;  // 2.1rem
+    if (length > 30) return `${baseFontSize * 0.75}rem`; // 2.25rem
+    if (length > 25) return `${baseFontSize * 0.85}rem`; // 2.55rem
+    if (length > 20) return `${baseFontSize * 0.9}rem`;  // 2.7rem
+
+    return `${baseFontSize}rem`; // Tamaño completo para nombres cortos
+};
+
+/**
+ * Estilos CSS para prevenir truncado de texto en nombres largos.
+ * Usar como spread en el objeto style de React.
+ */
+export const getNoTruncateStyles = () => ({
+    wordBreak: 'break-word' as const,
+    overflowWrap: 'break-word' as const,
+    hyphens: 'auto' as const,
+    whiteSpace: 'normal' as const,
+});
+
+/**
+ * Determina el ancho máximo óptimo del contenedor basado en la longitud del nombre
+ * para balancear el uso del espacio y la legibilidad.
+ * 
+ * @param name - Nombre completo del estudiante
+ * @returns Clase Tailwind para max-width
+ */
+export const getAdaptiveMaxWidth = (name: string): string => {
+    const length = name.length;
+
+    if (length > 45) return 'max-w-5xl'; // Extra ancho para nombres muy largos
+    if (length > 35) return 'max-w-4xl'; // Ancho para nombres largos
+    if (length > 25) return 'max-w-3xl'; // Ancho estándar
+
+    return 'max-w-2xl'; // Más compacto para nombres cortos
+};

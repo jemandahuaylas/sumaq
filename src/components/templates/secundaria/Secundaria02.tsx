@@ -1,6 +1,6 @@
 import React from 'react';
 import type { DiplomaConfig, Student } from '../../../types';
-import { processDiplomaText } from '../utils';
+import { processDiplomaText, getAdaptiveFontSize, getNoTruncateStyles, getAdaptiveMaxWidth } from '../utils';
 
 interface TemplateProps {
     config: DiplomaConfig;
@@ -238,10 +238,12 @@ export const Secundaria02: React.FC<TemplateProps> = ({ config, student }) => {
                         </div>
 
                         <h2
-                            className="text-5xl font-bold tracking-wide"
+                            className="font-bold tracking-wide"
                             style={{
                                 color: primary,
-                                fontFamily: '"Playfair Display", "Georgia", serif'
+                                fontFamily: '"Playfair Display", "Georgia", serif',
+                                fontSize: getAdaptiveFontSize(student.nombres, 3.5),
+                                ...getNoTruncateStyles()
                             }}
                         >
                             {student.nombres}

@@ -1,6 +1,6 @@
 import React from 'react';
 import type { DiplomaConfig, Student } from '../../../types';
-import { processDiplomaText } from '../utils';
+import { processDiplomaText, getAdaptiveFontSize, getNoTruncateStyles, getAdaptiveMaxWidth } from '../utils';
 
 interface TemplateProps {
     config: DiplomaConfig;
@@ -223,12 +223,14 @@ export const Secundaria01: React.FC<TemplateProps> = ({ config, student }) => {
                     </p>
 
                     {/* Nombre del Estudiante */}
-                    <div className="relative w-full max-w-3xl mb-4">
+                    <div className={`relative mb-4 mx-auto ${getAdaptiveMaxWidth(student.nombres)}`}>
                         <h2
-                            className="text-5xl font-bold italic py-2"
+                            className="font-bold italic py-2"
                             style={{
                                 color: primary,
-                                fontFamily: '"Playfair Display", "Georgia", serif'
+                                fontFamily: '"Playfair Display", "Georgia", serif',
+                                fontSize: getAdaptiveFontSize(student.nombres, 3.5),
+                                ...getNoTruncateStyles()
                             }}
                         >
                             {student.nombres}

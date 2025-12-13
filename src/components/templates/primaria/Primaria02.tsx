@@ -1,6 +1,6 @@
 import React from 'react';
 import type { DiplomaConfig, Student } from '../../../types';
-import { processDiplomaText } from '../utils';
+import { processDiplomaText, getAdaptiveFontSize, getNoTruncateStyles, getAdaptiveMaxWidth } from '../utils';
 
 interface TemplateProps {
     config: DiplomaConfig;
@@ -166,8 +166,8 @@ export const Primaria02: React.FC<TemplateProps> = ({ config, student }) => {
                         {config.subtituloDiploma || 'SE OTORGA A'}
                     </p>
 
-                    {/* Nombre del estudiante con fondo decorativo */}
-                    <div className="relative mb-6 w-full max-w-3xl">
+                    {/* Nombre del estudiante con fondo decorativo y ajuste dinámico */}
+                    <div className={`relative mb-6 w-full ${getAdaptiveMaxWidth(student.nombres)} px-4`}>
                         {/* Barra decorativa de fondo */}
                         <div
                             className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-20 -skew-x-6 opacity-10 -z-10"
@@ -175,18 +175,20 @@ export const Primaria02: React.FC<TemplateProps> = ({ config, student }) => {
                         />
 
                         <h2
-                            className="text-5xl font-bold capitalize py-3 relative z-10"
+                            className="font-bold capitalize py-3 relative z-10"
                             style={{
                                 color: primary,
-                                fontFamily: '"Poppins", "Montserrat", sans-serif'
+                                fontFamily: '"Poppins", "Montserrat", sans-serif',
+                                fontSize: getAdaptiveFontSize(student.nombres),
+                                ...getNoTruncateStyles()
                             }}
                         >
                             {student.nombres}
                         </h2>
 
                         {/* Elementos geométricos decorativos alrededor del nombre */}
-                        <div className="absolute -left-8 top-1/2 -translate-y-1/2 w-4 h-4 rotate-45" style={{ backgroundColor: secondary, opacity: 0.3 }} />
-                        <div className="absolute -right-8 top-1/2 -translate-y-1/2 w-4 h-4 rotate-45" style={{ backgroundColor: secondary, opacity: 0.3 }} />
+                        <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-4 rotate-45" style={{ backgroundColor: secondary, opacity: 0.3 }} />
+                        <div className="absolute -right-2 top-1/2 -translate-y-1/2 w-4 h-4 rotate-45" style={{ backgroundColor: secondary, opacity: 0.3 }} />
                     </div>
 
                     {/* Texto del diploma con fondo sutil */}

@@ -1,6 +1,6 @@
 import React from 'react';
 import type { DiplomaConfig, Student } from '../../../types';
-import { processDiplomaText } from '../utils';
+import { processDiplomaText, getAdaptiveFontSize, getNoTruncateStyles, getAdaptiveMaxWidth } from '../utils';
 
 interface TemplateProps {
     config: DiplomaConfig;
@@ -124,11 +124,16 @@ export const Inicial01: React.FC<TemplateProps> = ({ config, student }) => {
                 {/* Nombre Estudiante */}
                 <div className="text-center mb-6 relative py-2 w-full">
                     <span className="absolute top-0 left-[10%] text-3xl opacity-20 select-none pointer-events-none">✨</span>
-                    <h2 className="text-6xl font-bold capitalize drop-shadow-sm leading-tight px-4 truncate w-full"
-                        style={{ fontFamily: '"Fredoka", sans-serif', color: config.textColor || '#1e293b' }}>
+                    <h2 className={`font-bold capitalize drop-shadow-sm leading-tight px-4 mx-auto ${getAdaptiveMaxWidth(student.nombres)}`}
+                        style={{
+                            fontFamily: '"Fredoka", sans-serif',
+                            color: config.textColor || '#1e293b',
+                            fontSize: getAdaptiveFontSize(student.nombres, 4),
+                            ...getNoTruncateStyles()
+                        }}>
                         {student.nombres}
                     </h2>
-                    <span className="absolute bottom-0 right-[10%] text-3xl opacity-20 select-none pointer-events-none">🎈</span>
+                    <span className="absolute bottom-0 right-[10%] text-3xl opacity-20 select-none pointer-events-none">🌟</span>
                 </div>
 
                 {/* Texto del Diploma */}

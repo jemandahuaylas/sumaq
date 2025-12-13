@@ -1,6 +1,6 @@
 import React from 'react';
 import type { DiplomaConfig, Student } from '../../../types';
-import { processDiplomaText } from '../utils';
+import { processDiplomaText, getAdaptiveFontSize, getNoTruncateStyles, getAdaptiveMaxWidth } from '../utils';
 
 interface TemplateProps {
     config: DiplomaConfig;
@@ -113,10 +113,16 @@ export const Primaria01: React.FC<TemplateProps> = ({ config, student }) => {
                 </p>
 
                 {/* Nombre Estudiante */}
-                <div className="relative inline-block mb-8 w-full text-center">
+                <div className={`relative inline-block mb-8 mx-auto text-center ${getAdaptiveMaxWidth(student.nombres)}`}>
                     <div className="absolute inset-0 blur-2xl opacity-20 transform scale-x-110" style={{ backgroundColor: primary }}></div>
-                    <h2 className="relative text-6xl font-black uppercase italic transform -skew-x-6 z-10 truncate px-4 leading-tight mb-2"
-                        style={{ fontFamily: 'Impact, sans-serif', color: primary, textShadow: '2px 2px 0px rgba(0,0,0,0.1)' }}>
+                    <h2 className="relative font-black uppercase italic transform -skew-x-6 z-10 px-4 leading-tight mb-2"
+                        style={{
+                            fontFamily: 'Impact, sans-serif',
+                            color: primary,
+                            textShadow: '2px 2px 0px rgba(0,0,0,0.1)',
+                            fontSize: getAdaptiveFontSize(student.nombres, 4),
+                            ...getNoTruncateStyles()
+                        }}>
                         {student.nombres}
                     </h2>
                 </div>
