@@ -59,7 +59,17 @@ export const StudentVerificationModal: React.FC<Props> = ({ isOpen, onClose, onC
 
     useEffect(() => {
         if (isOpen) {
-            setLocalStudents(JSON.parse(JSON.stringify(initialStudents)));
+            const students = JSON.parse(JSON.stringify(initialStudents));
+            // Si no hay estudiantes (ingreso manual), agregar una fila vacía automáticamente
+            if (students.length === 0) {
+                students.push({
+                    id: Date.now().toString(),
+                    nombres: '',
+                    grado: '',
+                    nivel: ''
+                });
+            }
+            setLocalStudents(students);
         }
     }, [isOpen, initialStudents]);
 
@@ -85,6 +95,9 @@ export const StudentVerificationModal: React.FC<Props> = ({ isOpen, onClose, onC
         setLocalStudents(prev => [...prev, newStudent]);
     };
 
+    // Determinar título dinámicamente
+    const modalTitle = initialStudents.length === 0 ? "Ingreso Manual de Estudiantes" : title;
+
     if (!isOpen) return null;
 
     return (
@@ -94,10 +107,15 @@ export const StudentVerificationModal: React.FC<Props> = ({ isOpen, onClose, onC
                 <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
                     <div>
                         <h2 className="text-lg font-black text-slate-800 flex items-center gap-2">
-                            {title}
+                            {modalTitle}
                             <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-xs font-bold">{localStudents.length}</span>
                         </h2>
-                        <p className="text-xs text-slate-500">Revisa la información antes de procesar los diplomas.</p>
+                        <p className="text-xs text-slate-500">
+                            {initialStudents.length === 0
+                                ? 'Agrega estudiantes uno por uno usando el botón "Agregar Fila".'
+                                : 'Revisa la información antes de procesar los diplomas.'
+                            }
+                        </p>
                     </div>
                     <button onClick={onClose} className="text-slate-400 hover:text-red-500 transition-colors">
                         <X size={24} />
@@ -153,8 +171,13 @@ export const StudentVerificationModal: React.FC<Props> = ({ isOpen, onClose, onC
                             Cancelar
                         </button>
                         <button
-                            onClick={() => onConfirm(localStudents)}
-                            className="px-6 py-2.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all transform hover:scale-105 flex items-center gap-2 text-sm"
+                            onClick={() => {
+                                // Filtrar estudiantes con nombres válidos
+                                const validStudents = localStudents.filter(s => s.nombres.trim() !== '');
+                                onConfirm(validStudents);
+                            }}
+                            disabled={localStudents.filter(s => s.nombres.trim() !== '').length === 0}
+                            className="px-6 py-2.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all transform hover:scale-105 flex items-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none"
                         >
                             <Save size={18} /> Confirmar
                         </button>

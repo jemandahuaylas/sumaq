@@ -4,7 +4,7 @@ import { importStudentsFromExcel } from '../lib/excel-utils';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, horizontalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Upload, X, Plus, Users, School, FileText, PenTool, LayoutTemplate, Palette, Grid, Sliders, Pencil, RotateCcw, Image as ImageIcon, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Upload, X, Plus, Users, School, FileText, PenTool, LayoutTemplate, Palette, Grid, Sliders, Pencil, RotateCcw, Image as ImageIcon, Trash2, ChevronLeft, ChevronRight, Search, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
 import { StudentVerificationModal } from './StudentVerificationModal';
 import { TemplateEditor } from './TemplateEditor';
 import { useNotification } from './NotificationProvider';
@@ -33,6 +33,11 @@ export const ConfigPanel: React.FC = () => {
     const { showToast, showConfirm } = useNotification();
     const [showVerificationModal, setShowVerificationModal] = useState(false);
     const [pendingStudents, setPendingStudents] = useState<Student[]>([]);
+
+    // Estados para búsqueda y ordenamiento
+    const [searchQuery, setSearchQuery] = useState('');
+    const [sortColumn, setSortColumn] = useState<'nombre' | 'grado' | 'puesto' | null>(null);
+    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
     const sensors = useSensors(
         useSensor(PointerSensor),
@@ -98,6 +103,62 @@ export const ConfigPanel: React.FC = () => {
             reader.readAsDataURL(file);
         }
     };
+
+    // Función para filtrar estudiantes por búsqueda
+    const getFilteredStudents = () => {
+        if (!searchQuery.trim()) return students;
+
+        const query = searchQuery.toLowerCase();
+        return students.filter(s =>
+            s.nombres.toLowerCase().includes(query) ||
+            (s.grado && s.grado.toLowerCase().includes(query)) ||
+            (s.puesto && s.puesto.toLowerCase().includes(query))
+        );
+    };
+
+    // Función para ordenar estudiantes
+    const getSortedStudents = (studentsToSort: Student[]) => {
+        if (!sortColumn) return studentsToSort;
+
+        return [...studentsToSort].sort((a, b) => {
+            let aValue = '';
+            let bValue = '';
+
+            switch (sortColumn) {
+                case 'nombre':
+                    aValue = a.nombres.toLowerCase();
+                    bValue = b.nombres.toLowerCase();
+                    break;
+                case 'grado':
+                    aValue = (a.grado || '').toLowerCase();
+                    bValue = (b.grado || '').toLowerCase();
+                    break;
+                case 'puesto':
+                    aValue = (a.puesto || '').toLowerCase();
+                    bValue = (b.puesto || '').toLowerCase();
+                    break;
+            }
+
+            if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+            if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+            return 0;
+        });
+    };
+
+    // Manejar click en header de columna
+    const handleSort = (column: 'nombre' | 'grado' | 'puesto') => {
+        if (sortColumn === column) {
+            // Si ya está ordenado por esta columna, cambiar dirección
+            setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+        } else {
+            // Nueva columna, ordenar ascendente
+            setSortColumn(column);
+            setSortDirection('asc');
+        }
+    };
+
+    // Obtener estudiantes filtrados y ordenados
+    const displayedStudents = getSortedStudents(getFilteredStudents());
 
     const tabs = [
         { id: 'estudiantes', icon: Users, label: 'Estudiantes', color: 'bg-blue-600', text: 'text-blue-600' },
@@ -250,69 +311,247 @@ export const ConfigPanel: React.FC = () => {
                 <div className="flex-1 overflow-y-auto p-4 md:p-8 pb-24 md:pb-8">
 
                     {activeTab === 'estudiantes' && (
-                        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 text-center">
-                                <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <Users className="text-blue-600" size={32} />
-                                </div>
-                                <h3 className="text-lg font-bold text-slate-800 mb-1">Lista de Estudiantes</h3>
-                                <p className="text-sm text-slate-500 mb-6 px-4">Importa tu archivo Excel para generar diplomas automáticamente.</p>
+                        <div className="flex flex-col h-full animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            {students.length === 0 ? (
+                                // Vista sin estudiantes - Compacta
+                                <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                                            <Users className="text-blue-600" size={20} />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <h3 className="text-sm font-bold text-slate-800">Lista de Estudiantes</h3>
+                                            <p className="text-xs text-slate-500">Sin estudiantes cargados</p>
+                                        </div>
+                                    </div>
 
-                                {students.length === 0 ? (
-                                    <div className="space-y-4">
-                                        <label className="cursor-pointer block w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-lg shadow-blue-200 transition-all transform hover:scale-[1.02]">
-                                            <div className="flex items-center justify-center gap-2">
-                                                <Upload size={18} /> Subir Excel
+                                    <div className="space-y-2.5">
+                                        {/* Opción 1: Subir Excel */}
+                                        <label className="cursor-pointer group block">
+                                            <div className="relative overflow-hidden w-full py-3 px-3 bg-gradient-to-br from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg font-bold shadow-md shadow-blue-200 transition-all transform hover:scale-[1.01] active:scale-[0.99]">
+                                                <div className="flex items-center justify-center gap-2 relative z-10">
+                                                    <Upload size={18} strokeWidth={2.5} />
+                                                    <span className="text-sm">Subir Excel</span>
+                                                </div>
+                                                <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div>
                                             </div>
                                             <input type="file" accept=".xlsx, .xls" className="hidden" onChange={handleFileUpload} />
                                         </label>
+
+                                        {/* Opción 2: Ingreso Manual */}
+                                        <button
+                                            onClick={() => {
+                                                setPendingStudents([]);
+                                                setShowVerificationModal(true);
+                                            }}
+                                            className="group relative overflow-hidden w-full py-3 px-3 bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white rounded-lg font-bold shadow-md shadow-emerald-200 transition-all transform hover:scale-[1.01] active:scale-[0.99]"
+                                        >
+                                            <div className="flex items-center justify-center gap-2 relative z-10">
+                                                <Pencil size={18} strokeWidth={2.5} />
+                                                <span className="text-sm">Ingreso Manual</span>
+                                            </div>
+                                            <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div>
+                                        </button>
+
+                                        {/* Botón de plantilla - Más pequeño */}
                                         <button
                                             onClick={(e) => {
                                                 e.preventDefault();
                                                 import('../lib/excel-utils').then(mod => mod.downloadTemplate());
                                             }}
-                                            className="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-white border-2 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-400 rounded-xl text-sm font-semibold transition-all"
+                                            className="flex items-center justify-center gap-1.5 w-full py-2 px-3 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-blue-400 hover:text-blue-600 rounded-lg text-xs font-medium transition-all"
                                         >
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
-                                            Descargar plantilla de ejemplo
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+                                            Descargar plantilla
                                         </button>
                                     </div>
-                                ) : (
-                                    <div className="space-y-4">
-                                        <div className="text-left bg-slate-50 p-3 rounded-xl border border-slate-100 max-h-40 overflow-y-auto">
-                                            {students.map((s, i) => (
-                                                <div key={s.id} className="text-xs py-1.5 border-b border-slate-100 last:border-0 flex gap-2">
-                                                    <span className="font-mono text-slate-300 w-4">{i + 1}.</span>
-                                                    <span className="text-slate-700 font-medium truncate">{s.nombres}</span>
+                                </div>
+                            ) : (
+                                // Vista con estudiantes - Tabla compacta y funcional
+                                <div className="bg-white rounded-xl shadow-sm border border-slate-100 flex flex-col h-full overflow-hidden">
+                                    {/* Header compacto con búsqueda */}
+                                    <div className="px-4 py-3 border-b border-slate-100 flex-shrink-0 space-y-2">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
+                                                    <Users className="text-blue-600" size={16} />
                                                 </div>
-                                            ))}
-                                        </div>
-                                        <div className="flex flex-col gap-2">
+                                                <div>
+                                                    <h3 className="text-sm font-bold text-slate-800">Estudiantes</h3>
+                                                    <p className="text-xs text-slate-500">
+                                                        {displayedStudents.length === students.length
+                                                            ? `${students.length} registros`
+                                                            : `${displayedStudents.length} de ${students.length} registros`
+                                                        }
+                                                    </p>
+                                                </div>
+                                            </div>
                                             <button
                                                 onClick={() => {
                                                     setPendingStudents(students);
                                                     setShowVerificationModal(true);
                                                 }}
-                                                className="w-full py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1"
+                                                className="p-1.5 hover:bg-blue-50 rounded-lg text-blue-600 transition-colors"
+                                                title="Editar lista"
                                             >
-                                                <Pencil size={14} /> Editar Lista
+                                                <Pencil size={16} />
                                             </button>
-                                            <div className="flex gap-2">
-                                                <label className="cursor-pointer flex-1 py-2 bg-white border border-slate-200 text-slate-600 hover:border-blue-400 hover:text-blue-600 rounded-lg text-xs font-bold text-center transition-colors">
-                                                    Cambiar
-                                                    <input type="file" accept=".xlsx, .xls" className="hidden" onChange={handleFileUpload} />
-                                                </label>
+                                        </div>
+
+                                        {/* Campo de búsqueda */}
+                                        <div className="relative">
+                                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+                                            <input
+                                                type="text"
+                                                value={searchQuery}
+                                                onChange={(e) => setSearchQuery(e.target.value)}
+                                                placeholder="Buscar por nombre, grado o puesto..."
+                                                className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-700 placeholder:text-slate-400 focus:bg-white focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                                            />
+                                            {searchQuery && (
                                                 <button
-                                                    onClick={() => setStudents([])}
-                                                    className="flex-1 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-xs font-bold transition-colors"
+                                                    onClick={() => setSearchQuery('')}
+                                                    className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
                                                 >
-                                                    Limpiar
+                                                    <X size={14} />
                                                 </button>
-                                            </div>
+                                            )}
                                         </div>
                                     </div>
-                                )}
-                            </div>
+
+                                    {/* Tabla compacta con scroll */}
+                                    <div className="flex-1 overflow-y-auto">
+                                        <table className="w-full text-xs">
+                                            <thead className="sticky top-0 bg-slate-50 z-10">
+                                                <tr className="border-b border-slate-100">
+                                                    <th className="text-left px-3 py-2 font-bold text-slate-500 uppercase tracking-wider w-10">#</th>
+
+                                                    {/* Header clickeable para Nombre */}
+                                                    <th
+                                                        className="text-left px-3 py-2 font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors select-none group"
+                                                        onClick={() => handleSort('nombre')}
+                                                    >
+                                                        <div className="flex items-center gap-1">
+                                                            <span>Nombre</span>
+                                                            {sortColumn === 'nombre' ? (
+                                                                sortDirection === 'asc' ?
+                                                                    <ArrowUp size={12} className="text-blue-600" /> :
+                                                                    <ArrowDown size={12} className="text-blue-600" />
+                                                            ) : (
+                                                                <ArrowUpDown size={12} className="opacity-0 group-hover:opacity-50 transition-opacity" />
+                                                            )}
+                                                        </div>
+                                                    </th>
+
+                                                    {/* Header clickeable para Grado */}
+                                                    <th
+                                                        className="text-left px-3 py-2 font-bold text-slate-500 uppercase tracking-wider w-20 cursor-pointer hover:bg-slate-100 transition-colors select-none group"
+                                                        onClick={() => handleSort('grado')}
+                                                    >
+                                                        <div className="flex items-center gap-1">
+                                                            <span>Grado</span>
+                                                            {sortColumn === 'grado' ? (
+                                                                sortDirection === 'asc' ?
+                                                                    <ArrowUp size={12} className="text-blue-600" /> :
+                                                                    <ArrowDown size={12} className="text-blue-600" />
+                                                            ) : (
+                                                                <ArrowUpDown size={12} className="opacity-0 group-hover:opacity-50 transition-opacity" />
+                                                            )}
+                                                        </div>
+                                                    </th>
+
+                                                    {/* Header clickeable para Puesto */}
+                                                    <th
+                                                        className="text-left px-3 py-2 font-bold text-slate-500 uppercase tracking-wider w-24 cursor-pointer hover:bg-slate-100 transition-colors select-none group"
+                                                        onClick={() => handleSort('puesto')}
+                                                    >
+                                                        <div className="flex items-center gap-1">
+                                                            <span>Puesto</span>
+                                                            {sortColumn === 'puesto' ? (
+                                                                sortDirection === 'asc' ?
+                                                                    <ArrowUp size={12} className="text-blue-600" /> :
+                                                                    <ArrowDown size={12} className="text-blue-600" />
+                                                            ) : (
+                                                                <ArrowUpDown size={12} className="opacity-0 group-hover:opacity-50 transition-opacity" />
+                                                            )}
+                                                        </div>
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-50">
+                                                {displayedStudents.length > 0 ? (
+                                                    displayedStudents.map((s, i) => (
+                                                        <tr key={s.id} className="hover:bg-blue-50/30 transition-colors group">
+                                                            <td className="px-3 py-2 font-mono text-slate-400 text-xs">{students.indexOf(s) + 1}</td>
+                                                            <td className="px-3 py-2 text-slate-700 font-medium">
+                                                                <div className="truncate max-w-[200px]" title={s.nombres}>
+                                                                    {s.nombres}
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-3 py-2 text-slate-600">
+                                                                <span className="inline-block px-2 py-0.5 bg-slate-100 rounded text-xs font-medium">
+                                                                    {s.grado || '-'}
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-3 py-2 text-slate-600">
+                                                                {s.puesto ? (
+                                                                    <span className="inline-block px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 rounded text-xs font-semibold">
+                                                                        {s.puesto}
+                                                                    </span>
+                                                                ) : (
+                                                                    <span className="text-slate-300">-</span>
+                                                                )}
+                                                            </td>
+                                                        </tr>
+                                                    ))
+                                                ) : (
+                                                    <tr>
+                                                        <td colSpan={4} className="px-3 py-8 text-center text-slate-400">
+                                                            <div className="flex flex-col items-center gap-2">
+                                                                <Search size={24} className="opacity-30" />
+                                                                <p className="text-sm">No se encontraron resultados</p>
+                                                                <button
+                                                                    onClick={() => setSearchQuery('')}
+                                                                    className="text-xs text-blue-600 hover:text-blue-700 underline"
+                                                                >
+                                                                    Limpiar búsqueda
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                )}
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    {/* Acciones compactas al pie */}
+                                    <div className="px-3 py-2 border-t border-slate-100 flex gap-2 flex-shrink-0 bg-slate-50/50">
+                                        <label className="cursor-pointer flex-1 py-1.5 px-3 bg-white border border-slate-200 text-slate-600 hover:border-blue-400 hover:text-blue-600 rounded-lg text-xs font-semibold text-center transition-colors flex items-center justify-center gap-1">
+                                            <Upload size={12} />
+                                            Cambiar
+                                            <input type="file" accept=".xlsx, .xls" className="hidden" onChange={handleFileUpload} />
+                                        </label>
+                                        <button
+                                            onClick={async () => {
+                                                const confirmed = await showConfirm({
+                                                    title: '¿Limpiar lista?',
+                                                    message: 'Se eliminarán todos los estudiantes de la lista.',
+                                                    confirmText: 'Sí, limpiar',
+                                                    cancelText: 'Cancelar',
+                                                    type: 'danger'
+                                                });
+                                                if (confirmed) {
+                                                    setStudents([]);
+                                                }
+                                            }}
+                                            className="flex-1 py-1.5 px-3 bg-white border border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1"
+                                        >
+                                            <Trash2 size={12} />
+                                            Limpiar
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     )}
 
@@ -717,6 +956,6 @@ export const ConfigPanel: React.FC = () => {
                 onConfirm={handleConfirmImport}
                 initialStudents={pendingStudents}
             />
-        </div>
+        </div >
     );
 };
