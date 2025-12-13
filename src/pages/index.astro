@@ -11,13 +11,234 @@ import "@fontsource/playfair-display";
 <html lang="es">
 	<head>
 		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
+
+		<!-- Favicon y iconos -->
+		<link rel="icon" type="image/svg+xml" href="/icon.svg" />
+		<link rel="apple-touch-icon" href="/icon-192x192.png" />
+
+		<!-- Viewport optimizado para PWA -->
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes, viewport-fit=cover"
+		/>
+
+		<!-- PWA Manifest -->
+		<link rel="manifest" href="/manifest.json" />
+
+		<!-- Theme colors -->
+		<meta name="theme-color" content="#F59E0B" />
+		<meta name="msapplication-TileColor" content="#F59E0B" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+
+		<!-- Apple PWA Support -->
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-title" content="Sumaq Diplomas" />
+
+		<!-- Meta tags generales -->
+		<meta
+			name="description"
+			content="Sistema moderno para generar diplomas de reconocimiento para estudiantes de EBR en Perú. Crea diplomas personalizados de forma rápida y profesional."
+		/>
+		<meta
+			name="keywords"
+			content="diplomas, EBR, Perú, educación, reconocimiento, estudiantes, certificados"
+		/>
+		<meta name="author" content="Sumaq" />
+
+		<!-- Open Graph / Facebook -->
+		<meta property="og:type" content="website" />
+		<meta property="og:title" content="Sumaq - Generador de Diplomas EBR" />
+		<meta
+			property="og:description"
+			content="Sistema moderno para generar diplomas de reconocimiento para estudiantes de EBR en Perú"
+		/>
+		<meta property="og:image" content="/icon-512x512.png" />
+
+		<!-- Twitter -->
+		<meta name="twitter:card" content="summary" />
+		<meta
+			name="twitter:title"
+			content="Sumaq - Generador de Diplomas EBR"
+		/>
+		<meta
+			name="twitter:description"
+			content="Sistema moderno para generar diplomas de reconocimiento para estudiantes de EBR en Perú"
+		/>
+		<meta name="twitter:image" content="/icon-512x512.png" />
+
 		<meta name="generator" content={Astro.generator} />
 		<title>Sumaq - Editor de Diplomas</title>
 	</head>
 	<body>
 		<App client:only="react" />
+
+		<!-- Service Worker Registration -->
+		<script is:inline>
+			if ("serviceWorker" in navigator) {
+				window.addEventListener("load", () => {
+					navigator.serviceWorker
+						.register("/sw.js")
+						.then((registration) => {
+							console.log(
+								"✅ Service Worker registrado correctamente:",
+								registration.scope,
+							);
+
+							// Detectar actualizaciones
+							registration.addEventListener("updatefound", () => {
+								const newWorker = registration.installing;
+								newWorker.addEventListener(
+									"statechange",
+									() => {
+										if (
+											newWorker.state === "installed" &&
+											navigator.serviceWorker.controller
+										) {
+											// Hay una nueva versión disponible
+											console.log(
+												"🔄 Nueva versión disponible",
+											);
+
+											// Mostrar notificación de actualización
+											if (
+												confirm(
+													"¡Hay una nueva versión disponible! ¿Deseas actualizar ahora?",
+												)
+											) {
+												newWorker.postMessage({
+													type: "SKIP_WAITING",
+												});
+												window.location.reload();
+											}
+										}
+									},
+								);
+							});
+						})
+						.catch((error) => {
+							console.warn(
+								"❌ Error al registrar Service Worker:",
+								error,
+							);
+						});
+				});
+
+				// Recargar cuando se active un nuevo Service Worker
+				let refreshing = false;
+				navigator.serviceWorker.addEventListener(
+					"controllerchange",
+					() => {
+						if (!refreshing) {
+							refreshing = true;
+							window.location.reload();
+						}
+					},
+				);
+			}
+
+			// Prompt de instalación PWA
+			let deferredPrompt;
+			window.addEventListener("beforeinstallprompt", (e) => {
+				e.preventDefault();
+				deferredPrompt = e;
+
+				// Mostrar botón de instalación personalizado después de 5 segundos
+				setTimeout(() => {
+					if (
+						deferredPrompt &&
+						!window.matchMedia("(display-mode: standalone)").matches
+					) {
+						const installBanner = document.createElement("div");
+						installBanner.id = "install-banner";
+						installBanner.innerHTML = `
+							<div style="
+								position: fixed;
+								bottom: 20px;
+								left: 50%;
+								transform: translateX(-50%);
+								background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+								color: white;
+								padding: 16px 24px;
+								border-radius: 12px;
+								box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+								z-index: 9999;
+								display: flex;
+								align-items: center;
+								gap: 16px;
+								font-family: 'Outfit', sans-serif;
+								animation: slideUp 0.3s ease-out;
+								max-width: 90vw;
+							">
+								<div style="flex: 1;">
+									<div style="font-weight: bold; font-size: 14px; margin-bottom: 4px;">
+										📱 Instalar Sumaq
+									</div>
+									<div style="font-size: 12px; opacity: 0.9;">
+										Accede más rápido desde tu dispositivo
+									</div>
+								</div>
+								<button onclick="window.installApp()" style="
+									background: white;
+									color: #D97706;
+									border: none;
+									padding: 8px 16px;
+									border-radius: 8px;
+									font-weight: bold;
+									font-size: 13px;
+									cursor: pointer;
+									transition: transform 0.2s;
+								" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+									Instalar
+								</button>
+								<button onclick="document.getElementById('install-banner').remove()" style="
+									background: transparent;
+									color: white;
+									border: none;
+									padding: 8px;
+									font-size: 20px;
+									cursor: pointer;
+									opacity: 0.7;
+									transition: opacity 0.2s;
+								" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">
+									×
+								</button>
+							</div>
+						`;
+						document.body.appendChild(installBanner);
+					}
+				}, 5000);
+			});
+
+			window.installApp = async () => {
+				if (deferredPrompt) {
+					deferredPrompt.prompt();
+					const { outcome } = await deferredPrompt.userChoice;
+					console.log(`User response to install prompt: ${outcome}`);
+					deferredPrompt = null;
+					document.getElementById("install-banner")?.remove();
+				}
+			};
+
+			// Detectar si ya está instalada
+			window.addEventListener("appinstalled", () => {
+				console.log("✅ PWA instalada correctamente");
+				deferredPrompt = null;
+			});
+		</script>
+
+		<!-- Animación para el banner de instalación -->
+		<style is:inline>
+			@keyframes slideUp {
+				from {
+					transform: translateX(-50%) translateY(100px);
+					opacity: 0;
+				}
+				to {
+					transform: translateX(-50%) translateY(0);
+					opacity: 1;
+				}
+			}
+		</style>
 	</body>
 </html>
 

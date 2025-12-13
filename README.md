@@ -7,11 +7,16 @@ Editor de diplomas moderno para instituciones educativas peruanas. Genera diplom
 ## ✨ Características
 
 - 📊 **Importar estudiantes desde Excel** - Arrastra tu lista de estudiantes
-- 🎨 **Múltiples diseños** - Plantillas para Inicial, Primaria y Secundaria
+- ✍️ **Ingreso manual de estudiantes** - Agrega estudiantes uno por uno
+- 🔍 **Búsqueda en tiempo real** - Encuentra estudiantes instantáneamente
+- ⬆️⬇️ **Ordenamiento por columnas** - Ordena por nombre, grado o puesto
+- 🎨 **Múltiples diseños** - 5+ plantillas para Inicial, Primaria y Secundaria
 - 🖼️ **Logos personalizables** - Arrastra y reordena logos institucionales
 - ✍️ **Firmas digitales** - Añade firmas con imagen o texto
 - 📄 **Exportar a PDF** - Individual, multipágina o ZIP
-- 📱 **Diseño responsive** - Funciona en móviles y desktop
+- 📱 **Progressive Web App (PWA)** - ¡Instálala como app nativa!
+- 💾 **Funciona offline** - Crea diplomas sin conexión
+- 🎯 **Diseño responsive** - Funciona perfectamente en móviles y desktop
 - 💾 **Guarda tu progreso** - Los datos persisten en el navegador
 
 ## 🚀 Instalación
@@ -54,6 +59,32 @@ Este proyecto está optimizado para Vercel:
 - [jsPDF](https://github.com/parallax/jsPDF) - Generación de PDF
 - [modern-screenshot](https://github.com/nichenqin/modern-screenshot) - Captura de elementos
 - [XLSX](https://sheetjs.com/) - Procesamiento de Excel
+
+## 📱 Instalar como App (PWA)
+
+Sumaq es una Progressive Web App que puedes instalar en cualquier dispositivo:
+
+### Desktop (Chrome/Edge)
+1. Abrir la aplicación en Chrome o Edge
+2. Click en el icono de instalación en la barra de dirección
+3. ¡Listo! La app se abre en ventana independiente
+
+### Android
+1. Abrir en Chrome
+2. Esperar el banner "Instalar Sumaq" o ir a Menú → "Agregar a pantalla de inicio"
+3. ¡Listo! Icono en el launcher
+
+### iOS (Safari)
+1. Abrir en Safari
+2. Tap en el botón "Compartir" 
+3. "Agregar a pantalla de inicio"
+4. ¡Listo! Icono en la pantalla de inicio
+
+**Ventajas:**
+- ✅ Acceso más rápido (un click)
+- ✅ Funciona sin conexión
+- ✅ Actualización automática
+- ✅ Experiencia de app nativa
 
 ## 📝 Uso
 
