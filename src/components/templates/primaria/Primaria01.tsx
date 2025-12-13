@@ -108,8 +108,8 @@ export const Primaria01: React.FC<TemplateProps> = ({ config, student }) => {
                     <div className="h-1.5 w-32 mx-auto mt-2 rounded-full" style={{ backgroundImage: `linear-gradient(to right, ${primary}, ${secondary})` }}></div>
                 </div>
 
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.4em] mb-2 bg-slate-50 px-4 py-1 rounded border border-slate-100">
-                    Se confiere el presente a:
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.4em] mb-2 bg-slate-50 px-4 py-1 rounded border border-slate-100 whitespace-nowrap">
+                    {config.subtituloDiploma || 'SE CONFIERE EL PRESENTE A:'}
                 </p>
 
                 {/* Nombre Estudiante */}

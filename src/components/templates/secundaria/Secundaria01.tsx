@@ -216,7 +216,7 @@ export const Secundaria01: React.FC<TemplateProps> = ({ config, student }) => {
 
                     {/* Subtítulo */}
                     <p
-                        className="text-xs tracking-[0.3em] uppercase mb-3 font-medium"
+                        className="text-xs tracking-[0.3em] uppercase mb-3 font-medium whitespace-nowrap"
                         style={{ color: secondary }}
                     >
                         {config.subtituloDiploma || 'OTORGADO A'}
