@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect, forwardRef, useImperativeHandle } f
 import type { DiplomaConfig, Student } from '../types';
 import { Inicial01 } from './templates/inicial/Inicial01';
 import { Primaria01 } from './templates/primaria/Primaria01';
+import { Primaria02 } from './templates/primaria/Primaria02';
 import { Secundaria01 } from './templates/secundaria/Secundaria01';
 import { Secundaria02 } from './templates/secundaria/Secundaria02';
 
@@ -19,6 +20,7 @@ export type DiplomaPreviewHandle = {
 export const DIPLOMA_DESIGNS: Record<string, React.FC<any>> = {
     'inicial-01': Inicial01,
     'primaria-01': Primaria01,
+    'primaria-02': Primaria02,
     'secundaria-01': Secundaria01,
     'secundaria-02': Secundaria02,
 };

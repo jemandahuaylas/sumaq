@@ -128,6 +128,14 @@ export const ConfigPanel: React.FC = () => {
             defaultPalette: { primary: '#2563EB', secondary: '#FBBF24', background: '#ffffff', text: '#1e293b' }
         },
         {
+            id: 'primaria-02',
+            name: 'Geometría del Éxito',
+            category: 'Primaria',
+            previewColor: 'bg-pink-50',
+            available: true,
+            defaultPalette: { primary: '#EC4899', secondary: '#8B5CF6', background: '#FEFEFE', text: '#1E293B' }
+        },
+        {
             id: 'secundaria-01',
             name: 'Onda Esmeralda',
             category: 'Secundaria',
@@ -147,8 +155,8 @@ export const ConfigPanel: React.FC = () => {
         ...Array.from({ length: 10 }).map((_, i) => ({
             id: `infantil-${i + 2}`, name: `Infantil Creativo ${i + 1}`, category: 'Infantil', previewColor: 'bg-pink-50', available: false
         })),
-        ...Array.from({ length: 8 }).map((_, i) => ({
-            id: `primaria-${i + 2}`, name: `Excelencia Primaria ${i + 1}`, category: 'Primaria', previewColor: 'bg-sky-50', available: false
+        ...Array.from({ length: 7 }).map((_, i) => ({
+            id: `primaria-${i + 3}`, name: `Excelencia Primaria ${i + 1}`, category: 'Primaria', previewColor: 'bg-sky-50', available: false
         })),
         ...Array.from({ length: 8 }).map((_, i) => ({
             id: `secundaria-${i + 2}`, name: `Honor Secundaria ${i + 1}`, category: 'Secundaria', previewColor: 'bg-gray-50', available: false
