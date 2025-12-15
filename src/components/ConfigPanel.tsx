@@ -212,6 +212,14 @@ export const ConfigPanel: React.FC = () => {
             available: true,
             defaultPalette: { primary: '#1E3A5F', secondary: '#C9A227', background: '#FEFEFE', text: '#1E293B' }
         },
+        {
+            id: 'secundaria-03',
+            name: 'Mosaico Vibrante',
+            category: 'Secundaria',
+            previewColor: 'bg-rose-500',
+            available: true,
+            defaultPalette: { primary: '#0891B2', secondary: '#8B5CF6', background: '#FFFFFF', text: '#0F172A' }
+        },
         // Placeholders para demostración de arquitectura escalable (30+ diseños)
         ...Array.from({ length: 10 }).map((_, i) => ({
             id: `infantil-${i + 2}`, name: `Infantil Creativo ${i + 1}`, category: 'Infantil', previewColor: 'bg-pink-50', available: false
